@@ -27,7 +27,7 @@ def get_lan_lon(API_key, city_name, region):
     else:
         location = city_name
     country_name = "RU"
-     try:
+    try:
         resp = requests.get(
             f'http://api.openweathermap.org/geo/1.0/direct?q={location},{country_name}&appid={API_key}',
             timeout=(10, 10)
