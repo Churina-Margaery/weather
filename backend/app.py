@@ -13,7 +13,7 @@ def index():
     if request.method == "GET":
         city = request.args.get('city_name', '').strip()
         region = request.args.get('state_name', '').strip() or None
-        print(str(get_weather(city, region)[0]))
+        print(str(get_weather(city, region)))
         
         return str(get_weather(city, region)[0])
 

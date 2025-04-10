@@ -7,7 +7,7 @@ import { rootReducer } from '../../store/root-reducer';
 
 const testStore = configureStore({
   reducer: {
-    main: rootReducer, // Используем реальный редьюсер
+    main: rootReducer,
   },
 });
 

@@ -462,6 +462,12 @@ body {
   width: 25px;
 }
 
+.header__inputs {
+  display: flex;
+  flex-direction: row;
+  max-width: 740px;
+}
+
 .header__city-search {
   background-color: var(--light-grey);
   border-radius: 10px;

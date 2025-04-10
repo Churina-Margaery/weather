@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { AppState } from '../../types/state/state-types';
+import { AppState, ForecastItem } from '../../types/state/state-types';
 import { ServerWeatherInfo } from '../../types/state/state-types';
 import { extractWeatherInfoFromServer } from '../../utils/adapters';
 
@@ -36,7 +36,9 @@ export const mainSlice = createSlice({
       state.description = action.payload.description;
       state.icon = action.payload.icon;
       console.log(action.payload);
-      //state.forecast = action.payload.forecast;
+    },
+    loadForecast: (state, action: PayloadAction<ForecastItem[]>) => {
+      state.forecast = action.payload;
     },
     setLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -58,7 +60,8 @@ export const {
   changeCity,
   toggleTheme,
   setLoadingStatus,
-  setError
+  setError,
+  loadForecast
 } = mainSlice.actions;
 
 export default mainSlice;
