@@ -13,12 +13,17 @@ export function Header(): JSX.Element {
           <img src="./img/cloud.svg" alt="cloud" className="header__cloud" />
           <p className="header__label-desc">weather</p>
         </div>
-        <img src="./img/loupe.svg" alt="loupe" className="header__loupe" />
         <div className="header__inputs">
-          <input type="search" name="search-city" placeholder="Enter city name" id="1" className="header__city-search" />
-          <input type="search" name="search-state" placeholder="Enter state name (optional)" id="2" className="header__city-search" />
-          <input type="search" name="search-country" placeholder="Enter country name" id="3" className="header__city-search" />
+          <input type="search" name="search-city" placeholder="Enter city" id="1" className="header__city-search" />
+          <input type="search" name="search-state" placeholder="Enter state (optional)" id="2" className="header__city-search" />
+          <input type="search" name="search-country" placeholder="Enter country" id="3" className="header__city-search" />
         </div>
+        <button
+          className="header__loupe"
+          onClick={() => dispatch(toggleTheme())}
+        >
+          <img src="./img/loupe.svg" alt="loupe" />
+        </button>
         <button
           className="header__btn"
           onClick={() => dispatch(toggleTheme())}

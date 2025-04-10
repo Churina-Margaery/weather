@@ -458,15 +458,32 @@ body {
 }
 
 .header__loupe {
-  margin-left: 15px;
+  background-color: var(--light-grey);
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+}
+
+.header__loupe:hover {
+  box-shadow: 2px 2px 2px 2px var(--shadow);
+}
+
+.header__loupe img {
   width: 25px;
+  height: 25px;
 }
 
 .header__inputs {
   display: flex;
   flex-direction: row;
-  max-width: 730px;
-  gap: 8px;
+  max-width: 720px;
+  gap: 15px;
 }
 
 .header__city-search {
