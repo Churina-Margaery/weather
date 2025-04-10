@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import axios from 'axios';
 
 import { Header } from '../header/header';
 import { MainCard } from '../main-card/main-card';
@@ -15,7 +16,7 @@ function App(): JSX.Element {
   const darkTheme = useAppSelector(getIsDarkTheme);
 
   useEffect(() => {
-    dispatch(fetchWeatherAction());
+    dispatch(fetchWeatherAction({ cityName: 'Saint-Petersburg' }));
     const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (systemDarkMode) {
       dispatch(toggleTheme());

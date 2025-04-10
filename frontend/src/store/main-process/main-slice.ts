@@ -1,11 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { AppState } from '../../types/state/state-types';
+import { ServerWeatherInfo } from '../../types/state/state-types';
+import { extractWeatherInfoFromServer } from '../../utils/adapters';
 
 const initialState: AppState = {
   activeCityName: 'Saint-Petersburg',
   date: Date(),
   temperature: 0,
+  description: '',
+  icon: '',
   weatherInfo: {
     "Wind speed": 0,
     "Visibility": 0,
@@ -20,16 +24,19 @@ const initialState: AppState = {
   isError: false,
 };
 
+
 export const mainSlice = createSlice({
   name: 'Main',
   initialState,
   reducers: {
-    loadInfo: (state, action: PayloadAction<Omit<AppState, "isError" | "isLoading" | "darkTheme">>) => {
-      state.activeCityName = action.payload.activeCityName;
-      state.date = action.payload.date;
+    loadInfo: (state, action: PayloadAction<ServerWeatherInfo>) => {
+      state.date = Date();
       state.temperature = action.payload.temperature;
-      state.weatherInfo = action.payload.weatherInfo;
-      state.forecast = action.payload.forecast;
+      state.weatherInfo = extractWeatherInfoFromServer(action.payload);
+      state.description = action.payload.description;
+      state.icon = action.payload.icon;
+      console.log(action.payload);
+      //state.forecast = action.payload.forecast;
     },
     setLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;

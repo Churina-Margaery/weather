@@ -103,6 +103,6 @@ def main(city_name, region):
             })
         forecasts = json.dumps(forecast_list, ensure_ascii=False)
         return current_weather, forecasts, status_code
-    else:
-        return status_code
+    
+    return None, None, status_code
 

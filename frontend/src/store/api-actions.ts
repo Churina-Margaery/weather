@@ -1,49 +1,73 @@
 import axios, { AxiosInstance } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
-import { loadInfo, setLoadingStatus, setError } from './main-process/main-slice.js';
+import { loadInfo, setLoadingStatus, setError, changeCity } from './main-process/main-slice.js';
 import { ForecastItem } from '../types/state/state-types.js';
 import { AppDispatch, RootState } from '../store';
+import { ServerWeatherInfo } from '../types/state/state-types.js';
+
+// export const setFavoriteStatusAction = createAsyncThunk<void, { offerId: OfferId; isFavorite: number }, {
+//   dispatch: AppDispatch;
+//   state: State;
+//   extra: AxiosInstance;
+// }>(
+//   'data/setFavoriteStatus',
+//   async ({ offerId, isFavorite }, { dispatch, extra: api }) => {
+//     const { data } = await api.post<Offer>(
+//       `${APIRoute.Favorite}/${offerId}/${isFavorite}`,
+//       null
+//     );
+//     dispatch(favoriteOfferChange(data));
+//   },
+// );
 
 export const fetchWeatherAction = createAsyncThunk<
   void,
-  undefined,
+  { cityName: string },
   {
     dispatch: AppDispatch;
     state: RootState;
     extra: AxiosInstance;
-  }
->(
-  'data/fetchWeather',
-  async (_arg, { dispatch, extra: api }) => {
-    try {
-      dispatch(setLoadingStatus(true));
-      // await api.get('/fake-endpoint');
+  }>(
+    'data/fetchWeather',
+    async ({ cityName }, { dispatch, extra: api }) => {
+      try {
+        dispatch(setLoadingStatus(true));
+        // await api.get('/fake-endpoint');
 
-      const elem: ForecastItem = {
-        date: new Date().toISOString(),
-        temperature: 18
-      };
+        // const elem: ForecastItem = {
+        //   date: new Date().toISOString(),
+        //   temperature: 18
+        // };
 
-      dispatch(loadInfo({
-        activeCityName: 'Saint-Petersburg',
-        date: new Date().toISOString(),
-        temperature: 18,
-        weatherInfo: {
-          "Wind speed": 2,
-          "Visibility": 10,
-          "Pressure": 1008,
-          "Humidity": 68,
-          "Sunrise": new Date().toISOString(),
-          "Sunset": new Date().toISOString(),
-        },
-        forecast: Array(5).fill(elem),
-      }));
-    } finally {
-      dispatch(setLoadingStatus(false));
+        const params = new URLSearchParams({
+          city_name: cityName
+        });
+
+        const { data } = await api.get<ServerWeatherInfo>(`http://localhost:5000/?${params.toString()}`);
+        console.log(data);
+        dispatch(changeCity(cityName));
+        dispatch(loadInfo(data));
+
+        // dispatch(loadInfo({
+        //   activeCityName: 'Saint-Petersburg',
+        //   date: new Date().toISOString(),
+        //   temperature: 18,
+        //   weatherInfo: {
+        //     "Wind speed": 2,
+        //     "Visibility": 10,
+        //     "Pressure": 1008,
+        //     "Humidity": 68,
+        //     "Sunrise": new Date().toISOString(),
+        //     "Sunset": new Date().toISOString(),
+        //   },
+        //   forecast: Array(5).fill(elem),
+        // }));
+      } finally {
+        dispatch(setLoadingStatus(false));
+      }
     }
-  }
-);
+  );
 // interface WeatherData {
 //   activeCityName: string;
 //   date: string;
