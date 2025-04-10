@@ -5,51 +5,144 @@
   }
 }
 
+@media (max-width: 576px) {
+
+  /* Шапка */
+  .header .container {
+    gap: 8px;
+  }
+
+  .header__weather-label {
+    padding: 5px;
+  }
+
+  .header__cloud {
+    width: 20px;
+    margin: 8px;
+  }
+
+  .header__label-desc {
+    font-size: 14px;
+    margin-right: 10px;
+  }
+
+  .header__btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header__btn-img {
+    width: 14px;
+  }
+
+  .header__support-btn {
+    padding: 8px 12px;
+  }
+
+  .header__github {
+    margin-left: 8px;
+    width: 14px;
+  }
+
+  .header__support-desc {
+    font-size: 14px;
+    margin-right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* Шапка */
+  .header__label-desc {
+    display: none;
+  }
+
+  .header__weather-label {
+    max-width: 45px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .header__weather-label:hover {
+    max-width: 200px;
+  }
+
+  .header__support-desc {
+    display: none;
+  }
+
+  .header__github {
+    margin: 0;
+  }
+
+  .header__support-btn {
+    padding: 8px;
+  }
+
+  .header__city-search::placeholder {
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 992px) {
 
+  /* Шапка */
   /* Шапка */
   .header .container {
     flex-wrap: wrap;
     gap: 10px;
+    align-items: center;
+  }
+
+  .header__inputs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    order: 1;
+    width: 100%;
+    gap: 10px;
   }
 
   .header__city-search {
-    width: 100%;
-    order: 1;
-    min-height: 60px;
+    width: calc(50% - 5px);
+    min-height: 50px;
+    margin: 0;
   }
 
-  /* Основной контент */
-  .overview__items {
-    grid-template-columns: 1fr;
-    gap: 15px;
+  .header__btn {
+    order: 2;
+    margin-left: auto;
   }
 
-  .overview__small-items {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .chart__content {
-    flex-direction: column;
-  }
-
-  .mock {
-    width: 100%;
+  .header__support-link {
+    order: 3;
   }
 }
 
 @media (max-width: 768px) {
 
   /* Шапка */
+  /* Шапка */
   .header__weather-label {
-    flex-grow: 1;
+    flex-grow: 0;
   }
 
-  .header__btn,
-  .header__support-btn {
-    width: auto;
+  .header__loupe {
+    margin-left: 0;
+  }
+
+  .header__inputs {
+    flex-direction: column;
+  }
+
+  .header__city-search {
+    width: 100%;
+    min-height: 45px;
+  }
+
+  .header__btn {
+    width: 45px;
+    height: 45px;
     padding: 10px;
-    max-height: 60px;
   }
 
   /* Основной контент */

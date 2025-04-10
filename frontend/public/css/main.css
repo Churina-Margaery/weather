@@ -434,7 +434,7 @@ body {
 .header .container {
   display: flex;
   gap: 15px;
-
+  flex-wrap: wrap;
 }
 
 .header__weather-label {
@@ -465,7 +465,8 @@ body {
 .header__inputs {
   display: flex;
   flex-direction: row;
-  max-width: 740px;
+  max-width: 730px;
+  gap: 8px;
 }
 
 .header__city-search {
