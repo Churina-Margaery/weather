@@ -1,0 +1,106 @@
+name: UI Tests with Selenide and Allure Report
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    name: Unit-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Running unit-tests
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run test
+
+  test:
+    runs-on: ubuntu-latest
+    name: UI-tests and Report
+    needs: unit-test
+    timeout-minutes: 15
+    
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Start frontend server
+      - name: Start Frontend
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm start > frontend.log 2>&1 &
+          sleep 15
+          curl --retry 5 --retry-delay 3 --retry-all-errors http://localhost:5173 || cat frontend.log
+
+      # 3. Setup Java 17
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 4. Install Chrome and WebDriver
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: 'latest'
+
+      # 5. Run tests with optimized Selenide config
+      - name: Run Tests
+        working-directory: ./ui_test
+        env:
+          SELENIDE_BROWSER: "chrome"
+          SELENIDE_TIMEOUT: "15000"
+        run: |
+          mvn clean test \
+            -Dselenide.headless=true \
+            -Dselenide.browser=$SELENIDE_BROWSER \
+            -Dselenide.timeout=$SELENIDE_TIMEOUT \
+            -Dselenide.pageLoadStrategy=normal \
+            -Dchromeoptions.args='--disable-dev-shm-usage,--no-sandbox,--disable-gpu,--window-size=1366,768' \
+            -Dwebdriver.chrome.whitelistedIps="" \
+            -Dallure.results.directory=target/allure-results
+
+      - name: Copy History
+        uses: actions/checkout@v4
+        if: always()
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build Report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          allure_results: ui_test/target/allure-results
+          allure_report: ui_test/target/allure-report
+          allure_history: allure-history
+          gh_pages: gh-pages
+          keep_reports: 20
+      - name: Publish Report
+        if: always()
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
+
+      # 8. Cleanup
+      - name: Stop Frontend
+        run: |
+          pkill -f "npm start" || true
+          pkill -f "chrome" || true
+
+ 
