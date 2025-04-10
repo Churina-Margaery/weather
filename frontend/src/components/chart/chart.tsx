@@ -15,7 +15,7 @@ interface TemperatureChartProps {
 }
 
 export function TemperatureChart({ isDarkTheme }: TemperatureChartProps): JSX.Element {
-  // Цвета для разных тем
+
   const textColor = isDarkTheme ? '#ffffff' : '#333333';
   const axisColor = isDarkTheme ? '#cccccc' : '#666666';
   const gridColor = isDarkTheme ? '#444444' : '#eeeeee';
