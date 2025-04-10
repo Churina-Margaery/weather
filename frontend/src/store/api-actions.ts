@@ -7,7 +7,7 @@ import { ServerWeatherInfo } from '../types/state/state-types.js';
 
 export const fetchWeatherAction = createAsyncThunk<
   void,
-  { cityName: string },
+  { cityName: string, stateName: string, countryName: string },
   {
     dispatch: AppDispatch;
     state: RootState;

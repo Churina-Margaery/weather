@@ -16,7 +16,7 @@ function App(): JSX.Element {
   const darkTheme = useAppSelector(getIsDarkTheme);
 
   useEffect(() => {
-    dispatch(fetchWeatherAction({ cityName: 'Saint-Petersburg' }));
+    dispatch(fetchWeatherAction({ cityName: 'Saint-Petersburg', stateName: '', countryName: '' }));
     const systemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (systemDarkMode) {
       dispatch(toggleTheme());
