@@ -68,7 +68,6 @@ describe('MainCard component', () => {
   });
 
   it('should handle different data', () => {
-    // Моки для другого тестового случая
     mockGetTemp.mockReturnValue(-5);
     mockGetCity.mockReturnValue('Moscow');
     mockGetDate.mockReturnValue('2024-12-31T00:00:00');
