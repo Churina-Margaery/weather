@@ -475,6 +475,7 @@ body {
   border: none;
   outline: none;
   width: 720px;
+  padding-left: 8px;
 }
 
 .header__city-search:focus {
