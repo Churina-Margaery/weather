@@ -705,6 +705,7 @@ body {
 
 .chart__content-info {
   display: flex;
+  padding-bottom: 10px;
 }
 
 .chart__content-info-period {
