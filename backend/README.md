@@ -7,4 +7,4 @@
 ![alt text](sources/copykey.png)
 6. Создать файл .env, куда нужно будеть вставить свой API ключ.
 ![alt text](sources/insertkey.png)
-7. Запускаем приложение: flask  run.
+7. Запустить app.py как Flask application
