@@ -5,6 +5,8 @@ export type ForecastItem = {
   temperature: number;
 }
 
+export type ForecastItems = ForecastItem[];
+
 export type WeatherInfo = {
   "Wind speed": number,
   "Visibility": number,

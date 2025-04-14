@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { loadInfo, setLoadingStatus, setError, changeCity, loadForecast } from './main-process/main-slice.js';
 import { AppDispatch, RootState } from '../store';
-import { ServerWeatherInfo } from '../types/state/state-types.js';
+import { ServerWeatherInfo, ForecastItems } from '../types/state/state-types.js';
 
 export const fetchWeatherAction = createAsyncThunk<
   void,
@@ -27,13 +27,9 @@ export const fetchWeatherAction = createAsyncThunk<
         dispatch(changeCity(cityName));
         dispatch(loadInfo(data));
 
-        //TODO async
-        const forecastData = [{ "date": "2025-04-10T15:00:00Z", "temperature": 0 },
-        { "date": "2025-04-10T18:00:00Z", "temperature": 2 },
-        { "date": "2025-04-10T21:00:00Z", "temperature": 0 },
-        { "date": "2025-04-11T00:00:00Z", "temperature": 0 },
-        { "date": "2025-04-11T03:00:00Z", "temperature": -3 }];
-        dispatch(loadForecast(forecastData));
+        const forecast = (await api.get<ForecastItems>(`http://localhost:5000/forecast?${params.toString()}`));
+        console.log(forecast.data);
+        dispatch(loadForecast(forecast.data));
       } finally {
         dispatch(setLoadingStatus(false));
       }
