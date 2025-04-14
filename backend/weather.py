@@ -21,17 +21,17 @@ class WeatherData:
     humidity: int
     pressure: int
 
-def get_lan_lon(API_key, city_name, region):
+def get_lan_lon(API_key, city_name, region, country_name):
     if region:
         location = f"{city_name},{region}"
     else:
         location = city_name
-    country_name = "RU"
     try:
         resp = requests.get(
             f'http://api.openweathermap.org/geo/1.0/direct?q={location},{country_name}&appid={API_key}',
-            timeout=(10, 10)
+            timeout=(10, 10) 
         )
+
         if resp.status_code == 200:
             data = resp.json()
             return (data[0].get('lat'), data[0].get('lon'), 200) if data else (None, None, 400)
@@ -58,7 +58,6 @@ def get_current_weather(lat, lon, API_key):
     )
     return data
 
-
 @dataclass
 class WeatherForecastData:
     time: str
@@ -66,8 +65,8 @@ class WeatherForecastData:
 
 def get_weather_forecast(lat, lon, API_key):
     resp = requests.get(f'https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API_key}&units=metric').json()
-    forecasts = []
     
+    forecasts = []
     for entry in resp.get('list', [])[:5]:
         forecast = WeatherForecastData(
             temperature=int(entry.get('main').get('temp')),
@@ -77,11 +76,10 @@ def get_weather_forecast(lat, lon, API_key):
     
     return forecasts
 
-def main(city_name, region):
-    lat, lon, status_code = get_lan_lon(api_key, city_name, region)
+def current_weather(city_name, region, country_name):
+    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
     if status_code == 200:
         weather_data = get_current_weather(lat, lon, api_key)
-        forecast_data = get_weather_forecast(lat, lon, api_key)
         current_weather = {
             "temperature": weather_data.temperature,
             "wind_speed": weather_data.wind_speed,
@@ -93,16 +91,21 @@ def main(city_name, region):
             "description": weather_data.description,
             "icon": f"https://openweathermap.org/img/wn/{weather_data.icon}@2x.png"
         }
-        current_weather = json.dumps(current_weather, ensure_ascii=False)
+        return current_weather, status_code
+    else:
+        return None, status_code
+    
+def forecast_weather(city_name, region, country_name):
+    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
+    if status_code == 200:
+        forecast_data = get_weather_forecast(lat, lon, api_key)
         forecast_list = []
         for forecast in forecast_data:
-
             forecast_list.append({
                 "date": forecast.time,
                 "temperature": forecast.temperature
             })
-        forecasts = json.dumps(forecast_list, ensure_ascii=False)
-        return current_weather, forecasts, status_code
-    
-    return None, None, status_code
+        return forecast_list, status_code
+    else:
+        return None, status_code
 
