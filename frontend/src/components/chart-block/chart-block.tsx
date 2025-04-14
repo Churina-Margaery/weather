@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+import { TemperatureChart } from "../chart/chart";
+import { useAppSelector } from "../../store";
+import { getIsDarkTheme } from "../../store/main-process/selectors";
+
 type ChartBlockProps = {
   period: 3 | 10;
 }
@@ -26,7 +30,11 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
           </select>
         </div>
       </div>
-      <img src="./img/mock-diagram.png" alt="mock" className="mock" />
+
+      {/* <img src="./img/mock-diagram.png" alt="mock" className="mock" /> */}
+      <TemperatureChart
+        isDarkTheme={useAppSelector(getIsDarkTheme)}
+      />
     </div>
   );
 }
