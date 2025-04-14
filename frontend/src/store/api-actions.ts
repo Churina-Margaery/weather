@@ -14,7 +14,8 @@ export const fetchWeatherAction = createAsyncThunk<
     extra: AxiosInstance;
   }>(
     'data/fetchWeather',
-    async ({ cityName }, { dispatch, extra: api }) => {
+    async ({ cityName }, { dispatch, extra: api, rejectWithValue }) => {
+
       try {
         dispatch(setLoadingStatus(true));
 
@@ -23,13 +24,19 @@ export const fetchWeatherAction = createAsyncThunk<
         });
 
         const { data } = await api.get<ServerWeatherInfo>(`http://localhost:5000/?${params.toString()}`);
-        console.log(data);
         dispatch(changeCity(cityName));
         dispatch(loadInfo(data));
 
         const forecast = (await api.get<ForecastItems>(`http://localhost:5000/forecast?${params.toString()}`));
-        console.log(forecast.data);
         dispatch(loadForecast(forecast.data));
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          const errorMessage = err.response?.status === 400
+            ? 'No such city'
+            : 'Error while processing';
+          return rejectWithValue(errorMessage);
+        }
+        return rejectWithValue('Unknown error');
       } finally {
         dispatch(setLoadingStatus(false));
       }

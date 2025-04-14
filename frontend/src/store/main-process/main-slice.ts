@@ -35,7 +35,6 @@ export const mainSlice = createSlice({
       state.weatherInfo = extractWeatherInfoFromServer(action.payload);
       state.description = action.payload.description;
       state.icon = action.payload.icon;
-      console.log(action.payload);
     },
     loadForecast: (state, action: PayloadAction<ForecastItem[]>) => {
       state.forecast = action.payload;

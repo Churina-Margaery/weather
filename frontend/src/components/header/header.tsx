@@ -1,8 +1,12 @@
+import { useState } from "react";
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { useAppSelector, useAppDispatch } from "../../store";
 import { getIsDarkTheme } from '../../store/main-process/selectors';
 import { toggleTheme } from '../../store/main-process/main-slice';
 import { fetchWeatherAction } from "../../store/api-actions";
-import { useState } from "react";
 
 export function Header(): JSX.Element {
 
@@ -13,7 +17,7 @@ export function Header(): JSX.Element {
 
   const handleSearch = () => {
     if (!city.trim()) {
-      alert('Please enter a city name');
+      toast.error('Please enter a city name');
       return;
     }
 
@@ -21,7 +25,11 @@ export function Header(): JSX.Element {
       cityName: city.trim(),
       stateName: state.trim(),
       countryName: country.trim()
-    }));
+    }))
+      .unwrap()
+      .catch(() => {
+        toast.error('No such city');
+      });;
   };
 
   const handleKeyPress = (e: { key: string; }) => {
@@ -30,6 +38,7 @@ export function Header(): JSX.Element {
 
   return (
     <header className="header" data-testid="header-container">
+      <ToastContainer />
       <div className="container">
         <div className="header__weather-label">
           <img src="./img/cloud.svg" alt="cloud" className="header__cloud" />
