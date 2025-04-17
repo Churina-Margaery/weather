@@ -9,3 +9,5 @@ export const getInfo = (state: State): WeatherInfo => state['Main'].weatherInfo;
 export const getForecast = (state: State): ForecastItem[] => state['Main'].forecast;
 export const getIsLoading = (state: State): boolean => state['Main'].isLoading;
 export const getIsDarkTheme = (state: State): boolean => state['Main'].darkTheme;
+export const getDescription = (state: State): string => state['Main'].description;
+export const getIcon = (state: State): string => state['Main'].icon;

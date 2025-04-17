@@ -1,8 +1,5 @@
-export function LoadingScreen(): JSX.Element {
-  return (
-    <div className="loading-screen">
-      <span className="loading-text">loading</span>
-      <span className="loading-dots">...</span>
-    </div>
-  );
-}
+export const LoadingScreen = () => (
+  <div className="loader-overlay" data-testid="loader-container">
+    <div className="loader-spinner"></div>
+  </div>
+);
