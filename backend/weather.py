@@ -3,8 +3,10 @@ from dotenv import load_dotenv
 import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import json
 from requests.exceptions import Timeout
+import pytz
+from timezonefinder import TimezoneFinder
+
 
 load_dotenv()
 api_key = os.getenv('keyWeather')
@@ -45,14 +47,20 @@ def get_lan_lon(API_key, city_name, region, country_name):
 def get_current_weather(lat, lon, API_key):
     resp = requests.get(f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_key}&units=metric').json()
     
+    tf = TimezoneFinder()
+    timezone_str = tf.timezone_at(lat=lat, lng=lon)
+    local_tz = pytz.timezone(timezone_str)
+    sunrise_utc = datetime.fromtimestamp(resp['sys']['sunrise'], tz=pytz.utc)
+    sunset_utc = datetime.fromtimestamp(resp['sys']['sunset'], tz=pytz.utc)
+
     data = WeatherData(
         description=resp.get('weather')[0].get('description'),
         icon=resp.get('weather')[0].get('icon'),
         temperature=int(resp.get('main').get('temp')),
         wind_speed=resp.get('wind').get('speed'),
         visibility=resp.get('visibility') / 1000,
-        sunrise=datetime.fromtimestamp(resp['sys']['sunrise'], tz=timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
-        sunset=datetime.fromtimestamp(resp['sys']['sunset'], tz=timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z'),
+        sunrise=sunrise_utc.astimezone(local_tz).isoformat(timespec='seconds'),
+        sunset=sunset_utc.astimezone(local_tz).isoformat(timespec='seconds'),
         humidity=resp.get('main').get('humidity'),
         pressure=resp.get('main').get('pressure')
     )
@@ -67,10 +75,16 @@ def get_weather_forecast(lat, lon, API_key):
     resp = requests.get(f'https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={API_key}&units=metric').json()
     
     forecasts = []
+    
+    tf = TimezoneFinder()
+    timezone_str = tf.timezone_at(lat=lat, lng=lon)
+    local_tz = pytz.timezone(timezone_str)
+    
     for entry in resp.get('list', [])[:5]:
+        forecast_time_utc = datetime.fromtimestamp(entry['dt'], tz=pytz.utc)
         forecast = WeatherForecastData(
             temperature=int(entry.get('main').get('temp')),
-            time=datetime.fromtimestamp(entry['dt'], tz=timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
+            time=forecast_time_utc.astimezone(local_tz).isoformat(timespec='seconds')
         )
         forecasts.append(forecast)
     
