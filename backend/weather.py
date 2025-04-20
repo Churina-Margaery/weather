@@ -123,3 +123,37 @@ def forecast_weather(city_name, region, country_name):
     else:
         return None, status_code
 
+def get_past_weather_data(lat, lon, days, API_key):
+    # Заглушка с генерацией случайных данных
+    from random import randint
+    from datetime import timedelta
+    
+    now = datetime.now()
+    result = []
+
+    for i in range(days):
+        date = (now - timedelta(days=i+1)).date().isoformat()
+        result.append({
+            "date": date,
+            "temperature": randint(18, 25),
+            "wind speed": round(randint(30, 70) / 10, 1),
+            "visibility": randint(8, 10),
+            "pressure": randint(1008, 1018),
+            "humidity": randint(50, 75)
+        })
+
+    return result
+
+
+def past_weather_3days(city_name, region, country_name):
+    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
+    if status_code == 200:
+        return get_past_weather_data(lat, lon, 3, api_key), 200
+    return None, status_code
+
+
+def past_weather_10days(city_name, region, country_name):
+    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
+    if status_code == 200:
+        return get_past_weather_data(lat, lon, 10, api_key), 200
+    return None, status_code
