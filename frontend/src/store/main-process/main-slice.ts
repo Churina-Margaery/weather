@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { AppState, ForecastItem } from '../../types/state/state-types';
+import { AppState, ForecastItem, ForecastItems } from '../../types/state/state-types';
 import { ServerWeatherInfo } from '../../types/state/state-types';
-import { extractWeatherInfoFromServer } from '../../utils/adapters';
+import { extractWeatherInfoFromServer, extractForecastFromServer } from '../../utils/adapters';
 
 const initialState: AppState = {
   activeCityName: 'Saint-Petersburg',
@@ -36,8 +36,8 @@ export const mainSlice = createSlice({
       state.description = action.payload.description;
       state.icon = action.payload.icon;
     },
-    loadForecast: (state, action: PayloadAction<ForecastItem[]>) => {
-      state.forecast = action.payload;
+    loadForecast: (state, action: PayloadAction<ForecastItems>) => {
+      state.forecast = extractForecastFromServer(action.payload);
     },
     setLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
