@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { AppState, ForecastItem, ForecastItems } from '../../types/state/state-types';
+import { AppState, ForecastItem, ForecastItems, ChartsInfo } from '../../types/state/state-types';
 import { ServerWeatherInfo } from '../../types/state/state-types';
 import { extractWeatherInfoFromServer, extractForecastFromServer } from '../../utils/adapters';
 
@@ -19,6 +19,8 @@ const initialState: AppState = {
     "Sunset": Date(),
   },
   forecast: [],
+  chartsInfo3Days: [],
+  chartsInfo10Days: [],
   darkTheme: false,
   isLoading: true,
   isError: false,
@@ -38,6 +40,12 @@ export const mainSlice = createSlice({
     },
     loadForecast: (state, action: PayloadAction<ForecastItems>) => {
       state.forecast = extractForecastFromServer(action.payload);
+    },
+    loadChartsData3Days: (state, action: PayloadAction<ChartsInfo[]>) => {
+      state.chartsInfo3Days = action.payload;
+    },
+    loadChartsData10Days: (state, action: PayloadAction<ChartsInfo[]>) => {
+      state.chartsInfo10Days = action.payload;
     },
     setLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -60,7 +68,9 @@ export const {
   toggleTheme,
   setLoadingStatus,
   setError,
-  loadForecast
+  loadForecast,
+  loadChartsData3Days,
+  loadChartsData10Days
 } = mainSlice.actions;
 
 export default mainSlice;

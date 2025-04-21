@@ -1,42 +1,59 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { day: 'Mon', temp: 22 },
-  { day: 'Tue', temp: 19 },
-  { day: 'Wed', temp: 24 },
-  { day: 'Thu', temp: 21 },
-  { day: 'Fri', temp: 18 },
-  { day: 'Sat', temp: 20 },
-  { day: 'Sun', temp: 23 }
-];
+import { useAppSelector } from '../../store';
+import { ChartsInfo } from '../../types/state/state-types';
+
+// const data = [
+//   { day: 'Mon', temp: 22 },
+//   { day: 'Tue', temp: 19 },
+//   { day: 'Wed', temp: 24 },
+//   { day: 'Thu', temp: 21 },
+//   { day: 'Fri', temp: 18 },
+//   { day: 'Sat', temp: 20 },
+//   { day: 'Sun', temp: 23 }
+// ];
+
+// [{ date: '2025-04-20', temperature: 20 },
+// { date: '2025-04-19', temperature: 20 },
+// { date: '2025-04-18', temperature: 20 }]
 
 interface TemperatureChartProps {
   isDarkTheme: boolean;
+  days: 3 | 10;
+  data: ChartsInfo[];
+  value: string;
 }
 
-export function TemperatureChart({ isDarkTheme }: TemperatureChartProps): JSX.Element {
-
+export function TemperatureChart({ isDarkTheme, days, data, value }: TemperatureChartProps): JSX.Element {
   const textColor = isDarkTheme ? '#ffffff' : '#333333';
   const axisColor = isDarkTheme ? '#cccccc' : '#666666';
   const gridColor = isDarkTheme ? '#444444' : '#eeeeee';
   const tooltipBg = isDarkTheme ? '#424242' : '#ffffff';
-
+  const unit = {
+    temperature: '°C',
+    wind: 'm/s',
+    pressure: 'hPa',
+    humidity: '%',
+    visibility: 'km'
+  }[value];
+  const dataForChart = data.map((item) => ({ date: item.date, value: item[value] }));
+  console.log(1, data);
   return (
     <div style={{ width: '100%', height: 300 }}>
       <ResponsiveContainer>
-        <LineChart data={data}>
+        <LineChart data={dataForChart}>
           <CartesianGrid
             strokeDasharray="3 3"
             stroke={gridColor}
           />
           <XAxis
-            dataKey="day"
+            dataKey="date"
             tick={{ fill: textColor }}
             axisLine={{ stroke: axisColor }}
           />
           <YAxis
             label={{
-              value: '°C',
+              value: { unit },
               angle: -90,
               position: 'insideLeft',
               fill: textColor
@@ -62,7 +79,7 @@ export function TemperatureChart({ isDarkTheme }: TemperatureChartProps): JSX.El
           />
           <Line
             type="monotone"
-            dataKey="temp"
+            dataKey={"value"}
             stroke="#8884d8"
             strokeWidth={2}
           />
