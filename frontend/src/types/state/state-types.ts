@@ -7,6 +7,8 @@ export type ForecastItem = {
 
 export type ForecastItems = ForecastItem[];
 
+export type WeatherChartTypes = "humidity" | "pressure" | "temperature" | "visibility" | "wind speed";
+
 export type WeatherInfo = {
   "Wind speed": number,
   "Visibility": number,
@@ -16,6 +18,16 @@ export type WeatherInfo = {
   "Sunset": string,
 };
 
+export type ChartsInfo = {
+  "date": string,
+  "humidity": number,
+  "pressure": number,
+  "temperature": number,
+  "visibility": number,
+  "wind speed": number,
+};
+
+
 export type AppState = {
   activeCityName: string;
   date: string;
@@ -24,6 +36,8 @@ export type AppState = {
   icon: string;
   weatherInfo: WeatherInfo;
   forecast: ForecastItem[];
+  chartsInfo3Days: ChartsInfo[];
+  chartsInfo10Days: ChartsInfo[];
   darkTheme: boolean;
   isLoading: boolean;
   isError: boolean;
