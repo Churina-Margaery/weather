@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
+import { WeatherChartTypes } from '../../types/state/state-types';
 import { useAppSelector } from '../../store';
 import { ChartsInfo } from '../../types/state/state-types';
 
@@ -21,7 +21,7 @@ interface TemperatureChartProps {
   isDarkTheme: boolean;
   days: 3 | 10;
   data: ChartsInfo[];
-  value: string;
+  value: WeatherChartTypes;
 }
 
 export function TemperatureChart({ isDarkTheme, days, data, value }: TemperatureChartProps): JSX.Element {
@@ -31,13 +31,12 @@ export function TemperatureChart({ isDarkTheme, days, data, value }: Temperature
   const tooltipBg = isDarkTheme ? '#424242' : '#ffffff';
   const unit = {
     temperature: '°C',
-    wind: 'm/s',
+    "wind speed": 'm/s',
     pressure: 'hPa',
     humidity: '%',
     visibility: 'km'
   }[value];
   const dataForChart = data.map((item) => ({ date: item.date, value: item[value] }));
-  console.log(1, data);
   return (
     <div style={{ width: '100%', height: 300 }}>
       <ResponsiveContainer>
@@ -53,7 +52,7 @@ export function TemperatureChart({ isDarkTheme, days, data, value }: Temperature
           />
           <YAxis
             label={{
-              value: { unit },
+              value: unit,
               angle: -90,
               position: 'insideLeft',
               fill: textColor
@@ -79,7 +78,7 @@ export function TemperatureChart({ isDarkTheme, days, data, value }: Temperature
           />
           <Line
             type="monotone"
-            dataKey={"value"}
+            dataKey="value"
             stroke="#8884d8"
             strokeWidth={2}
           />
