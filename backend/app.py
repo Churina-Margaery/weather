@@ -44,7 +44,7 @@ def get_10_days_weather():
     else:
         return jsonify({"detail": "Failed to get weather data"}), status_code
 
-@app.route('/forecast', methods=['GET'])
+@app.route('/forecast/', methods=['GET'])
 def get_forecast_weather():
     city_name = request.args.get('city_name')  
     state_name = request.args.get('state_name', None) 
