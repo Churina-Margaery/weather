@@ -1,0 +1,5 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","957","Проверка кликабельности кнопки изменения темы","","Mon Apr 21 17:43:47 GMT 2025","passed","Mon Apr 21 17:43:48 GMT 2025","","Основной экран","com.example.test.WeatherPageTest","changeTheme"
+"","956","Отображение элементов заголовочной строки поиска","","Mon Apr 21 17:43:48 GMT 2025","passed","Mon Apr 21 17:43:49 GMT 2025","","Строка поиска","com.example.test.SearchingStringTest","checkUI"
+"","4794","Открытие GitHub по нажатию на Support Project","","Mon Apr 21 17:43:43 GMT 2025","passed","Mon Apr 21 17:43:47 GMT 2025","","Основной экран","com.example.test.WeatherPageTest","openSupport"
+"","4378","Ввод текста в строку поиска","","Mon Apr 21 17:43:49 GMT 2025","passed","Mon Apr 21 17:43:54 GMT 2025","","Строка поиска","com.example.test.SearchingStringTest","setText"
