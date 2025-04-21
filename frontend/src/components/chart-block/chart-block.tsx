@@ -3,7 +3,7 @@ import { useState } from "react";
 import { TemperatureChart } from "../chart/chart";
 import { useAppSelector } from "../../store";
 import { getIsDarkTheme } from "../../store/main-process/selectors";
-import { ChartsInfo } from '../../types/state/state-types';
+import { ChartsInfo, WeatherChartTypes } from '../../types/state/state-types';
 import { get3DaysData, get10DaysData, getCity } from '../../store/main-process/selectors';
 
 
@@ -12,7 +12,7 @@ type ChartBlockProps = {
 }
 export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
 
-  const [selectedValue, setSelectedValue] = useState('temperature');
+  const [selectedValue, setSelectedValue] = useState<WeatherChartTypes>('temperature');
   let data: ChartsInfo[] = [];
 
   if (period === 3) {
@@ -20,7 +20,6 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
   } else {
     data = useAppSelector(get10DaysData);
   }
-  console.log("!", data, useAppSelector(getCity));
 
   return (
     <div className="chart__content-part">
@@ -32,10 +31,11 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
             required
             value={selectedValue}
             onChange={(e) => {
-              setSelectedValue(e.target.value);
+              const value = e.target.value as WeatherChartTypes;
+              setSelectedValue(value);
             }}
           >
-            <option value="wind">Wind speed</option>
+            <option value="wind speed">Wind speed</option>
             <option value="pressure">Pressure</option>
             <option value="humidity">Humidity</option>
             <option value="visibility">Visibility</option>
