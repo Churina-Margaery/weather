@@ -4,8 +4,7 @@ import { TemperatureChart } from "../chart/chart";
 import { useAppSelector } from "../../store";
 import { getIsDarkTheme } from "../../store/main-process/selectors";
 import { ChartsInfo, WeatherChartTypes } from '../../types/state/state-types';
-import { get3DaysData, get10DaysData, getCity } from '../../store/main-process/selectors';
-
+import { get3DaysData, get10DaysData } from '../../store/main-process/selectors';
 
 type ChartBlockProps = {
   period: 3 | 10;
@@ -44,7 +43,6 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
         </div>
       </div>
 
-      {/* <img src="./img/mock-diagram.png" alt="mock" className="mock" /> */}
       <TemperatureChart
         isDarkTheme={useAppSelector(getIsDarkTheme)}
         data={data}

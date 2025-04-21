@@ -1,21 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
 import { WeatherChartTypes } from '../../types/state/state-types';
-import { useAppSelector } from '../../store';
 import { ChartsInfo } from '../../types/state/state-types';
-
-// const data = [
-//   { day: 'Mon', temp: 22 },
-//   { day: 'Tue', temp: 19 },
-//   { day: 'Wed', temp: 24 },
-//   { day: 'Thu', temp: 21 },
-//   { day: 'Fri', temp: 18 },
-//   { day: 'Sat', temp: 20 },
-//   { day: 'Sun', temp: 23 }
-// ];
-
-// [{ date: '2025-04-20', temperature: 20 },
-// { date: '2025-04-19', temperature: 20 },
-// { date: '2025-04-18', temperature: 20 }]
 
 interface TemperatureChartProps {
   isDarkTheme: boolean;
