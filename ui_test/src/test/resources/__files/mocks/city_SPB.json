@@ -1,0 +1,11 @@
+{
+    "description": "overcast clouds",
+    "humidity": 76,
+    "icon": "https://openweathermap.org/img/wn/04d@2x.png",
+    "pressure": 1017,
+    "sunrise": "2025-04-22T05:21:43+03:00",
+    "sunset": "2025-04-22T20:32:24+03:00",
+    "temperature": 10,
+    "visibility": 10.0,
+    "wind_speed": 4
+}
