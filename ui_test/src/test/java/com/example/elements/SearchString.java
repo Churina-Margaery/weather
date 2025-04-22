@@ -12,6 +12,7 @@ public class SearchString implements LoadablePage {
 
     private static final By nameString = byXpath("//div[@class = 'header__weather-label']");
     private static final By searchImage = byXpath("//img[@alt = 'loupe']");
+    private static final By searchButton = byXpath("//button[@class = 'header__loupe']");
     private static final By searchString = byXpath("//input[@type = 'search']");
     private static final By themeButton = byXpath("//button[@class = 'header__btn']");
     private static final By supportProjectButton = byXpath("//button[@class = 'header__support-btn']");
@@ -32,9 +33,9 @@ public class SearchString implements LoadablePage {
         return new GitHubPage();
     }
 
-    public void setText(String value) {
+    public void setText(String city) {
         $(searchString).shouldBe(enabled).click();
-        $(searchString).type(value);
+        $(searchString).type(city);
     }
 
     public String getText() {
@@ -43,5 +44,10 @@ public class SearchString implements LoadablePage {
 
     public void changeTheme() {
         $(themeButton).shouldBe(enabled).click();
+    }
+
+    public void findCity(String city) {
+        setText(city);
+        $(searchButton).shouldBe(enabled).click();
     }
 }
