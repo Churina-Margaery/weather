@@ -2,14 +2,11 @@ package com.example.test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import com.example.Utils;
 import com.example.elements.SearchString;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
 import io.qameta.allure.Allure;
 
 @WireMockTest(httpPort = 5000)

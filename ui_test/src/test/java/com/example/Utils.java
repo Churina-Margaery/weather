@@ -2,8 +2,6 @@ package com.example;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
-import org.bouncycastle.jcajce.provider.asymmetric.dsa.DSASigner.stdDSA;
-
 public class Utils {
     
     static public void stubSpb() {
@@ -26,10 +24,10 @@ public class Utils {
         stubFor(get(urlPathEqualTo("/3days/"))
         .withQueryParam("city_name", equalTo("Saint-Petersburg"))
         .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-type", "application/json")
-                .withHeader("Access-Control-Allow-Origin", "*")
-                .withBodyFile("mocks/three_days_SPB.json")));
+            .withStatus(200)
+            .withHeader("Content-type", "application/json")
+            .withHeader("Access-Control-Allow-Origin", "*")
+            .withBodyFile("mocks/three_days_SPB.json")));
 
         stubFor(get(urlPathEqualTo("/10days/"))
         .withQueryParam("city_name", equalTo("Saint-Petersburg"))
@@ -60,10 +58,10 @@ public class Utils {
         stubFor(get(urlPathEqualTo("/3days/"))
         .withQueryParam("city_name", equalTo(city))
         .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-type", "application/json")
-                .withHeader("Access-Control-Allow-Origin", "*")
-                .withBodyFile("mocks/three_days_city.json")));
+            .withStatus(200)
+            .withHeader("Content-type", "application/json")
+            .withHeader("Access-Control-Allow-Origin", "*")
+            .withBodyFile("mocks/three_days_city.json")));
 
         stubFor(get(urlPathEqualTo("/10days/"))
         .withQueryParam("city_name", equalTo(city))

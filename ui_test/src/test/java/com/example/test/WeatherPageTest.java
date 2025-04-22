@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import com.example.elements.SearchString;
 import com.example.pages.GitHubPage;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-
 import io.qameta.allure.Allure;
 import static com.codeborne.selenide.Selenide.switchTo;
 
