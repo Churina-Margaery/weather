@@ -1,0 +1,6 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","8","Проверка кликабельности кнопки изменения темы","","Tue Apr 22 17:13:11 GMT 2025","broken","Tue Apr 22 17:13:11 GMT 2025","","Основной экран","com.example.test.WeatherPageTest","changeTheme"
+"","1097","Открытие GitHub по нажатию на Support Project","","Tue Apr 22 17:13:10 GMT 2025","broken","Tue Apr 22 17:13:11 GMT 2025","","Основной экран","com.example.test.WeatherPageTest","openSupport"
+"","4537","Ввод текста в строку поиска","","Tue Apr 22 17:13:22 GMT 2025","passed","Tue Apr 22 17:13:26 GMT 2025","","Строка поиска","com.example.test.SearchingStringTest","setText"
+"","951","Отображение элементов заголовочной строки поиска","","Tue Apr 22 17:13:21 GMT 2025","passed","Tue Apr 22 17:13:22 GMT 2025","","Строка поиска","com.example.test.SearchingStringTest","checkUI"
+"","9224","Поиск погоды в городе","","Tue Apr 22 17:13:12 GMT 2025","failed","Tue Apr 22 17:13:21 GMT 2025","","Строка поиска","com.example.test.SearchingStringTest","searchWeatherInCity"
