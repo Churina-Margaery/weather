@@ -1,5 +1,7 @@
 package com.example.test;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import org.junit.jupiter.api.AfterEach;
@@ -13,10 +15,12 @@ import static com.codeborne.selenide.Browsers.CHROME;
 import static com.codeborne.selenide.WebDriverRunner.clearBrowserCache;
 
 public class BaseTest {
+
     @BeforeEach
     public void setupConf() {
+
         Configuration.browser = CHROME;
-        Configuration.baseUrl = "http://localhost:5173/";
+        Configuration.baseUrl = "http://localhost:5173";
         Configuration.timeout = 10000; // Установка таймаута 10 секунд
         
         // Настройка W3C-совместимых опций Chrome
@@ -44,7 +48,23 @@ public class BaseTest {
         
         // Установка W3C-совместимых capabilities
         Configuration.browserCapabilities = options;
-        
+
+        stubFor(get(urlPathEqualTo("/"))
+        .withQueryParam("city_name", equalTo("Saint-Petersburg"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-type", "application/json")
+            .withHeader("Access-Control-Allow-Origin", "*")
+            .withBodyFile("mocks/city_SPB.json")));
+
+        stubFor(get(urlPathEqualTo("/forecast"))
+        .withQueryParam("city_name", equalTo("Saint-Petersburg"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("Content-type", "application/json")
+            .withHeader("Access-Control-Allow-Origin", "*")
+            .withBodyFile("mocks/city_forecast_SPB.json")));
+
         Selenide.open("/");
     }
 
