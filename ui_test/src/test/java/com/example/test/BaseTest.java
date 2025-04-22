@@ -1,9 +1,9 @@
 package com.example.test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import com.example.Utils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -49,22 +49,8 @@ public class BaseTest {
         // Установка W3C-совместимых capabilities
         Configuration.browserCapabilities = options;
 
-        stubFor(get(urlPathEqualTo("/"))
-        .withQueryParam("city_name", equalTo("Saint-Petersburg"))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-type", "application/json")
-            .withHeader("Access-Control-Allow-Origin", "*")
-            .withBodyFile("mocks/city_SPB.json")));
-
-        stubFor(get(urlPathEqualTo("/forecast"))
-        .withQueryParam("city_name", equalTo("Saint-Petersburg"))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-type", "application/json")
-            .withHeader("Access-Control-Allow-Origin", "*")
-            .withBodyFile("mocks/city_forecast_SPB.json")));
-
+        Utils.stubSpb();
+        
         Selenide.open("/");
     }
 

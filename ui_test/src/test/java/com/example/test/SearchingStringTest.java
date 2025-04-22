@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import com.example.Utils;
 import com.example.elements.SearchString;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 
@@ -43,21 +45,7 @@ public class SearchingStringTest extends BaseTest {
     public void searchWeatherInCity() {
         SearchString searchString = new SearchString();
 
-        stubFor(get(urlPathEqualTo("/"))
-        .withQueryParam("city_name", equalTo("Москва"))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-type", "application/json")
-            .withHeader("Access-Control-Allow-Origin", "*")
-            .withBodyFile("mocks/city.json")));
-
-        stubFor(get(urlPathEqualTo("/forecast"))
-        .withQueryParam("city_name", equalTo("Москва"))
-        .willReturn(aResponse()
-            .withStatus(200)
-            .withHeader("Content-type", "application/json")
-            .withHeader("Access-Control-Allow-Origin", "*")
-            .withBodyFile("mocks/city_forecast.json")));
+        Utils.stubCity("Москва");
 
         Allure.step("Поиск \"Москвы\"", () -> {
             searchString.findCity("Москва");
@@ -69,17 +57,14 @@ public class SearchingStringTest extends BaseTest {
             e.printStackTrace();
         }
         
-        getAllServeEvents().forEach(event -> {
-            System.out.println("URL: " + event.getRequest().getUrl());
-            System.out.println("Method: " + event.getRequest().getMethod());
-            System.out.println("Query Params: " + event.getRequest().getQueryParams());
-            System.out.println("Headers: " + event.getRequest().getHeaders());
-        });
-        
         Allure.step("Проверка того, что были вызваны методы", () -> {
             verify(getRequestedFor(urlPathEqualTo("/"))
                 .withQueryParam("city_name", equalTo("Москва")));
-            verify(getRequestedFor(urlPathEqualTo("/forecast"))
+            verify(getRequestedFor(urlPathEqualTo("/forecast/"))
+                .withQueryParam("city_name", equalTo("Москва")));
+            verify(getRequestedFor(urlPathEqualTo("/3days/"))
+                .withQueryParam("city_name", equalTo("Москва")));
+            verify(getRequestedFor(urlPathEqualTo("/10days/"))
                 .withQueryParam("city_name", equalTo("Москва")));
         });
     }
