@@ -756,6 +756,28 @@ body {
   ;
 }
 
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.loading__loupe,
+.loading__support,
+.loading__overview,
+.loading__overview-small-item,
+.loading__overview-forecast {
+  animation: pulse 1.7s ease-in-out infinite;
+}
+
 .loading__loupe {
   background-color: var(--dark-grey);
   border: none;
