@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, formToJSON } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { toast } from 'react-toastify';
 
 import { loadInfo, setLoadingStatus, setError, changeCity, loadForecast, loadChartsData10Days, loadChartsData3Days } from './main-process/main-slice.js';
 import { AppDispatch, RootState } from '../store';
@@ -35,16 +36,20 @@ export const fetchWeatherAction = createAsyncThunk<
 
         const data10Days = (await api.get<ChartsInfo[]>(`http://localhost:5000/10days/?${params.toString()}`));
         dispatch(loadChartsData10Days(data10Days.data));
+
+        dispatch(setLoadingStatus(false));
       } catch (err) {
         if (axios.isAxiosError(err)) {
           const errorMessage = err.response?.status === 400
             ? 'No such city'
             : 'Error while processing';
+          toast.error(errorMessage);
           return rejectWithValue(errorMessage);
         }
+        toast.error('Unknown error');
         return rejectWithValue('Unknown error');
       } finally {
-        dispatch(setLoadingStatus(false));
+        // dispatch(setLoadingStatus(false));
       }
     }
   );

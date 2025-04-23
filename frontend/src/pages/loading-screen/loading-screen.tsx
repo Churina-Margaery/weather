@@ -1,15 +1,12 @@
 import { useAppSelector } from "../../store";
 import { getIsDarkTheme } from "../../store/main-process/selectors";
-// export const LoadingScreen = () => (
-//   <div classNameName="loader-overlay" data-testid="loader-container">
-//     <div classNameName="loader-spinner"></div>
-//   </div>
-// );
+import { ToastContainer } from 'react-toastify';
 
 export function LoadingScreen(): JSX.Element {
   return (
-    <section>
+    <section data-testid="loader-container">
       <header className="header">
+        <ToastContainer />
         <div className="container">
           <div className="header__weather-label">
             <img src="./img/cloud.svg" alt="cloud" className="header__cloud" />
