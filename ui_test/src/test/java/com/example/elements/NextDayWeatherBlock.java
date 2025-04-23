@@ -2,7 +2,11 @@ package com.example.elements;
 
 import com.example.pages.LoadablePage;
 
-public class InfoBlock implements LoadablePage {
+public class NextDayWeatherBlock implements LoadablePage {
+    
+    public NextDayWeatherBlock() {
+        checkUI();
+    }
     
     @Override
     public boolean checkUI() {

@@ -4,8 +4,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import com.example.Utils;
 import com.example.elements.SearchString;
+import com.example.utils.Utils;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.qameta.allure.Allure;
 
@@ -24,35 +24,33 @@ public class SearchingStringTest extends BaseTest {
     }
 
     @Test
-    @DisplayName("Ввод текста в строку поиска")
+    @DisplayName("Ввод текста в строки поиска")
     public void setText() {
         SearchString searchString = new SearchString();
 
         Allure.step("Ввод \"Санкт-Петербург\" в строку поиска", () -> {
-            searchString.setText("Санкт-Петербург");
+            searchString.setFullText("Санкт-Петербург", "Ленинградская область", "Россия");
         });
 
         Allure.step("Проверка соответствия значению поля", () -> {
-            assertEquals("Санкт-Петербург", searchString.getText());
+            assertEquals("Санкт-Петербург", searchString.getCity());
+            assertEquals("Ленинградская область", searchString.getState());
+            assertEquals("Россия", searchString.getCountry());
         });
     }
 
     @Test
-    @DisplayName("Поиск погоды в городе")
+    @DisplayName("Проверка вызовов методов при поиски погоды в городе")
     public void searchWeatherInCity() {
         SearchString searchString = new SearchString();
 
         Utils.stubCity("Москва");
 
-        Allure.step("Поиск \"Москвы\"", () -> {
+        Allure.step("Поиск погоды в \"Москве\"", () -> {
             searchString.findCity("Москва");
         });
 
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        searchString.checkUI();
         
         Allure.step("Проверка того, что были вызваны методы", () -> {
             verify(getRequestedFor(urlPathEqualTo("/"))

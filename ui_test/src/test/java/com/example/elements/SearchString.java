@@ -12,16 +12,23 @@ public class SearchString implements LoadablePage {
 
     private static final By nameString = byXpath("//div[@class = 'header__weather-label']");
     private static final By searchImage = byXpath("//img[@alt = 'loupe']");
-    private static final By searchString = byXpath("//input[@type = 'search']");
+    private static final By cityField = byXpath("//input[@name = 'search-city']");
+    private static final By stateFieled = byXpath("//input[@name = 'search-state']");
+    private static final By countryField = byXpath("//input[@name = 'search-country']");
     private static final By searchButton = byXpath("//button[@class = 'header__loupe']");
     private static final By themeButton = byXpath("//button[@class = 'header__btn']");
     private static final By supportProjectButton = byXpath("//button[@class = 'header__support-btn']");
 
+    public SearchString() {
+        checkUI();
+    }
     @Override
     public boolean checkUI() {
         $(nameString).isDisplayed();
         $(searchImage).isDisplayed();
-        $(searchString).isDisplayed();
+        $(cityField).isDisplayed();
+        $(stateFieled).isDisplayed();
+        $(countryField).isDisplayed();
         $(themeButton).isDisplayed();
         $(supportProjectButton).isDisplayed();
         $(supportProjectButton).shouldHave(exactText("Support Project"));
@@ -34,12 +41,29 @@ public class SearchString implements LoadablePage {
     }
 
     public void setText(String city) {
-        $(searchString).shouldBe(enabled).click();
-        $(searchString).type(city);
+        $(cityField).shouldBe(enabled).click();
+        $(cityField).type(city);
     }
 
-    public String getText() {
-        return $(searchString).getValue();
+    public void setFullText(String city, String state, String country) {
+        $(cityField).shouldBe(enabled).click();
+        $(cityField).type(city);       
+        $(stateFieled).shouldBe(enabled).click();
+        $(stateFieled).type(state);       
+        $(countryField).shouldBe(enabled).click();
+        $(countryField).type(country);
+    }
+
+    public String getCity() {
+        return $(cityField).getValue();
+    }
+
+    public String getState() {
+        return $(stateFieled).getValue();
+    }
+
+    public String getCountry() {
+        return $(countryField).getValue();
     }
 
     public void changeTheme() {

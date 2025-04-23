@@ -2,15 +2,12 @@ package com.example.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
-import com.example.Utils;
-
+import com.example.utils.Utils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import static com.codeborne.selenide.Browsers.CHROME;
 import static com.codeborne.selenide.WebDriverRunner.clearBrowserCache;
 

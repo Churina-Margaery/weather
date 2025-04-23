@@ -2,9 +2,9 @@ package com.example.elements;
 
 import com.example.pages.LoadablePage;
 
-public class StatisticBlock implements LoadablePage {
-
-    public StatisticBlock() {
+public class AdditionalInfoBlock implements LoadablePage {
+    
+    public AdditionalInfoBlock() {
         checkUI();
     }
 
@@ -12,5 +12,4 @@ public class StatisticBlock implements LoadablePage {
     public boolean checkUI() {
         return true;
     }
-    
 }
