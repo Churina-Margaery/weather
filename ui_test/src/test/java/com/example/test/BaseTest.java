@@ -2,6 +2,8 @@ package com.example.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import com.example.Utils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -13,10 +15,12 @@ import static com.codeborne.selenide.Browsers.CHROME;
 import static com.codeborne.selenide.WebDriverRunner.clearBrowserCache;
 
 public class BaseTest {
+
     @BeforeEach
     public void setupConf() {
+
         Configuration.browser = CHROME;
-        Configuration.baseUrl = "http://localhost:5173/";
+        Configuration.baseUrl = "http://localhost:5173";
         Configuration.timeout = 10000; // Установка таймаута 10 секунд
         
         // Настройка W3C-совместимых опций Chrome
@@ -44,6 +48,8 @@ public class BaseTest {
         
         // Установка W3C-совместимых capabilities
         Configuration.browserCapabilities = options;
+
+        Utils.stubSpb();
         
         Selenide.open("/");
     }

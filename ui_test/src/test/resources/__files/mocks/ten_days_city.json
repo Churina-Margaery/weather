@@ -1,0 +1,82 @@
+[
+    {
+      "date": "2025-04-21",
+      "humidity": 66,
+      "pressure": 1008,
+      "temperature": 20,
+      "visibility": 8,
+      "wind speed": 6.4
+    },
+    {
+      "date": "2025-04-20",
+      "humidity": 75,
+      "pressure": 1013,
+      "temperature": 20,
+      "visibility": 8,
+      "wind speed": 4.0
+    },
+    {
+      "date": "2025-04-19",
+      "humidity": 66,
+      "pressure": 1014,
+      "temperature": 24,
+      "visibility": 9,
+      "wind speed": 3.6
+    },
+    {
+      "date": "2025-04-18",
+      "humidity": 69,
+      "pressure": 1017,
+      "temperature": 21,
+      "visibility": 9,
+      "wind speed": 6.0
+    },
+    {
+      "date": "2025-04-17",
+      "humidity": 73,
+      "pressure": 1012,
+      "temperature": 22,
+      "visibility": 9,
+      "wind speed": 4.2
+    },
+    {
+      "date": "2025-04-16",
+      "humidity": 57,
+      "pressure": 1011,
+      "temperature": 22,
+      "visibility": 8,
+      "wind speed": 3.0
+    },
+    {
+      "date": "2025-04-15",
+      "humidity": 55,
+      "pressure": 1013,
+      "temperature": 21,
+      "visibility": 10,
+      "wind speed": 5.6
+    },
+    {
+      "date": "2025-04-14",
+      "humidity": 72,
+      "pressure": 1008,
+      "temperature": 21,
+      "visibility": 8,
+      "wind speed": 5.3
+    },
+    {
+      "date": "2025-04-13",
+      "humidity": 55,
+      "pressure": 1015,
+      "temperature": 18,
+      "visibility": 10,
+      "wind speed": 5.5
+    },
+    {
+      "date": "2025-04-12",
+      "humidity": 57,
+      "pressure": 1017,
+      "temperature": 20,
+      "visibility": 9,
+      "wind speed": 4.8
+    }
+  ]
