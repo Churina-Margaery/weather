@@ -11,6 +11,5 @@ public class StatisticBlock implements LoadablePage {
     @Override
     public boolean checkUI() {
         return true;
-    }
-    
+    } 
 }

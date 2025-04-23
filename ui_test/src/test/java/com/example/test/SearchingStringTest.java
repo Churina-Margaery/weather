@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import com.example.elements.SearchString;
-import com.example.utils.Utils;
+import com.example.utils.MockUtil;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.qameta.allure.Allure;
 
@@ -44,7 +44,7 @@ public class SearchingStringTest extends BaseTest {
     public void searchWeatherInCity() {
         SearchString searchString = new SearchString();
 
-        Utils.stubCity("Москва");
+        MockUtil.stubCity("Москва");
 
         Allure.step("Поиск погоды в \"Москве\"", () -> {
             searchString.findCity("Москва");

@@ -22,6 +22,7 @@ public class SearchString implements LoadablePage {
     public SearchString() {
         checkUI();
     }
+    
     @Override
     public boolean checkUI() {
         $(nameString).isDisplayed();
