@@ -19,19 +19,6 @@ def get_current_weather():
     else:
         return jsonify({"detail": "Failed to get weather data"}), status_code
 
-# @app.route('/3days/', methods=['GET'])
-# def get_3_days_weather():
-#     city_name = request.args.get('city_name')  
-#     state_name = request.args.get('state_name', None)  
-#     country_name = request.args.get('country_name') 
-
-#     data, status_code = past_weather_3days(city_name, state_name, country_name)
-
-#     if status_code == 200:
-#         return jsonify(data), 200
-#     else:
-#         return jsonify({"detail": "Failed to get weather data"}), status_code
-
 @app.route('/3days/', methods=['GET'])
 def get_3_days_weather():
     city_name = request.args.get('city_name')  
@@ -63,7 +50,7 @@ def get_10_days_weather():
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get SPb weather data"}), 500
     else:
-        data, status_code = past_weather_3days(city_name, state_name, country_name)
+        data, status_code = past_weather_10days(city_name, state_name, country_name)
         if status_code == 200:
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get weather data"}), status_code
