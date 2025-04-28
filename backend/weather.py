@@ -12,7 +12,7 @@ import time
 
 
 load_dotenv()
-api_key = os.getenv('keyWeather')
+api_key = os.getenv('OW_API_KEY')
 api_key_days = os.getenv('VC_API_KEY')
 
 @dataclass
