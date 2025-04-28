@@ -131,8 +131,8 @@ def get_past_weather_data(lat, lon, days, API_key):
     now = datetime.now()
     result = []
 
-    for i in range(days):
-        date = (now - timedelta(days=i+1)).date().isoformat()
+    for i in range(days, 0, -1):  # Изменяем направление цикла
+        date = (now - timedelta(days=i)).date().isoformat()  # Вычитаем i дней
         result.append({
             "date": date,
             "temperature": randint(18, 25),
