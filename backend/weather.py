@@ -157,7 +157,7 @@ def fetch_and_store_spb_weather():
         response.raise_for_status()
         weather_data = response.json().get('days', [])
 
-        existing_dates = {r.date for r in session.query(WeatherRecord.date).filter_by(city='Saint-Petersburg').all()}
+        existing_dates = {r.date for r in session.query(WeatherRecord.date).filter_by(city='Saint Petersburg').all()}
 
         for day in weather_data:
             record_date = date.fromisoformat(day['datetime'])
@@ -202,7 +202,7 @@ def get_spb_weather_from_db(days):
         start_date = end_date - timedelta(days=days-1)
         
         records = session.query(WeatherRecord)\
-            .filter(WeatherRecord.city == 'Saint-Petersburg')\
+            .filter(WeatherRecord.city == 'Saint Petersburg')\
             .filter(WeatherRecord.date >= start_date)\
             .filter(WeatherRecord.date <= end_date)\
             .order_by(WeatherRecord.date.asc())\

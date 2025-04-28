@@ -57,9 +57,15 @@ def get_10_days_weather():
 
     data, status_code = past_weather_10days(city_name, state_name, country_name)
 
-    if status_code == 200:
-        return jsonify(data), 200
+    if city_name.lower() in ['saint-petersburg', 'санкт-петербург', 'спб', 'saint petersburg']:
+        data = get_spb_weather_from_db(10)
+        if data:
+            return jsonify(data), 200
+        return jsonify({"detail": "Failed to get SPb weather data"}), 500
     else:
+        data, status_code = past_weather_3days(city_name, state_name, country_name)
+        if status_code == 200:
+            return jsonify(data), 200
         return jsonify({"detail": "Failed to get weather data"}), status_code
 
 @app.route('/forecast/', methods=['GET'])
@@ -77,6 +83,6 @@ def get_forecast_weather():
 
 if __name__ == '__main__':
     from weather import fetch_and_store_spb_weather
-    success = fetch_and_store_spb_weather()  # Заполняем базу данных перед запуском
+    success = fetch_and_store_spb_weather()
     print("Data fetched and stored:", success)
     app.run(debug=True)
