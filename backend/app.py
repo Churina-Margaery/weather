@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from weather import current_weather, forecast_weather, past_weather_3days, past_weather_10days, get_spb_weather_from_db
+from weather import current_weather, forecast_weather, past_weather, get_spb_weather_from_db
 from flask_cors import CORS
 
 
@@ -31,7 +31,7 @@ def get_3_days_weather():
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get SPb weather data"}), 500
     else:
-        data, status_code = past_weather_3days(city_name, state_name, country_name)
+        data, status_code = past_weather(city_name, state_name, country_name, 3)
         if status_code == 200:
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get weather data"}), status_code
@@ -42,15 +42,13 @@ def get_10_days_weather():
     state_name = request.args.get('state_name', None)  
     country_name = request.args.get('country_name') 
 
-    data, status_code = past_weather_10days(city_name, state_name, country_name)
-
     if city_name.lower() in ['saint-petersburg', 'санкт-петербург', 'спб', 'saint petersburg']:
         data = get_spb_weather_from_db(10)
         if data:
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get SPb weather data"}), 500
     else:
-        data, status_code = past_weather_10days(city_name, state_name, country_name)
+        data, status_code = past_weather(city_name, state_name, country_name, 10)
         if status_code == 200:
             return jsonify(data), 200
         return jsonify({"detail": "Failed to get weather data"}), status_code

@@ -232,15 +232,8 @@ def get_spb_weather_from_db(days):
         session.close()
 
 
-def past_weather_3days(city_name, region, country_name):
+def past_weather(city_name, region, country_name, days):
     lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
     if status_code == 200:
-        return get_past_weather_data(lat, lon, 3, api_key_days), 200
-    return None, status_code
-
-
-def past_weather_10days(city_name, region, country_name):
-    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
-    if status_code == 200:
-        return get_past_weather_data(lat, lon, 10, api_key_days), 200
+        return get_past_weather_data(lat, lon, days, api_key_days), 200
     return None, status_code

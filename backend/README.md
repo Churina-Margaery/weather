@@ -15,6 +15,6 @@ CREATE DATABASE weather_db;
 CREATE USER weather_user WITH PASSWORD 'weather_password';
 GRANT ALL PRIVILEGES ON DATABASE weather_db TO weather_user;
 ALTER DATABASE weather_db OWNER TO weather_user;
-9. Добавить в файл .env данные для подключения к базе данных.
+9. Добавить в файл .env свой пароль для подключения к базе данных.
 ![alt text](sources/database_connect.png)
-10. Запустить приложение: flask run.
+10. Запустить приложение: python app.py
