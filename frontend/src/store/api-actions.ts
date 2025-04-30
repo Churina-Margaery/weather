@@ -1,8 +1,8 @@
-import axios, { AxiosInstance, formToJSON } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 
-import { loadInfo, setLoadingStatus, setError, changeCity, loadForecast, loadChartsData10Days, loadChartsData3Days } from './main-process/main-slice.js';
+import { loadInfo, setLoadingStatus, changeCity, loadForecast, loadChartsData10Days, loadChartsData3Days } from './main-process/main-slice.js';
 import { AppDispatch, RootState } from '../store';
 import { ServerWeatherInfo, ForecastItems, ChartsInfo } from '../types/state/state-types.js';
 

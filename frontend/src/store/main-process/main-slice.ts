@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { AppState, ForecastItem, ForecastItems, ChartsInfo } from '../../types/state/state-types';
+import { AppState, ForecastItems, ChartsInfo } from '../../types/state/state-types';
 import { ServerWeatherInfo } from '../../types/state/state-types';
 import { extractWeatherInfoFromServer, extractForecastFromServer } from '../../utils/adapters';
 
