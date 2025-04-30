@@ -27,7 +27,7 @@ status code 200
 ```json
 {
   "temperature": 20,
-  "wind speed": 5.2,
+  "wind_speed": 5.2,
   "visibility": 10,
   "pressure": 1013,
   "humidity": 65,
@@ -61,7 +61,7 @@ status code 200
   {
     "date": "2023-10-25",
     "temperature": 22,
-    "wind speed": 4.8,
+    "wind_speed": 4.8,
     "visibility": 9,
     "pressure": 1012,
     "humidity": 60
@@ -69,7 +69,7 @@ status code 200
   {
     "date": "2023-10-26",
     "temperature": 19,
-    "wind speed": 6.1,
+    "wind_speed": 6.1,
     "visibility": 8,
     "pressure": 1015,
     "humidity": 70
@@ -77,7 +77,7 @@ status code 200
   {
     "date": "2023-10-27",
     "temperature": 21,
-    "wind speed": 5.5,
+    "wind_speed": 5.5,
     "visibility": 10,
     "pressure": 1010,
     "humidity": 55

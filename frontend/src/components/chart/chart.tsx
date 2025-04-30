@@ -17,7 +17,7 @@ export function TemperatureChart({ isDarkTheme, days, data, value }: Temperature
   const tooltipBg = isDarkTheme ? '#424242' : '#ffffff';
   const unit = {
     temperature: '°C',
-    "wind speed": 'm/s',
+    wind_speed: 'm/s',
     pressure: 'hPa',
     humidity: '%',
     visibility: 'km'

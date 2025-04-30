@@ -34,7 +34,7 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
               setSelectedValue(value);
             }}
           >
-            <option value="wind speed">Wind speed</option>
+            <option value="wind_speed">Wind speed</option>
             <option value="pressure">Pressure</option>
             <option value="humidity">Humidity</option>
             <option value="visibility">Visibility</option>
