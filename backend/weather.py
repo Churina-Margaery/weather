@@ -2,14 +2,18 @@ import requests
 from dotenv import load_dotenv
 import os
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from requests.exceptions import Timeout
 import pytz
 from timezonefinder import TimezoneFinder
+from database import Session, WeatherRecord
+import sqlalchemy.exc
+import time
 
 
 load_dotenv()
-api_key = os.getenv('keyWeather')
+api_key = os.getenv('OW_API_KEY')
+api_key_days = os.getenv('VC_API_KEY')
 
 @dataclass
 class WeatherData:
@@ -124,36 +128,112 @@ def forecast_weather(city_name, region, country_name):
         return None, status_code
 
 def get_past_weather_data(lat, lon, days, API_key):
-    # Заглушка с генерацией случайных данных
-    from random import randint
-    from datetime import timedelta
+    try:
+        end_date = date.today()
+        start_date = end_date - timedelta(days=days-1)
+        
+        url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/{lat},{lon}/{start_date}/{end_date}?unitGroup=metric&include=days&key={API_key}&contentType=json"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        weather_data = response.json().get('days', [])
+        
+        result = []
+        for day in weather_data:
+            result.append({
+                "date": day['datetime'],
+                "temperature": day.get('temp', None),
+                "wind_speed": round(day.get('windspeed', 0) / 3.6, 1),
+                "visibility": day.get('visibility', None),
+                "pressure": day.get('pressure', None),
+                "humidity": day.get('humidity', None),
+            })
+        
+        return result
     
-    now = datetime.now()
-    result = []
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching historical weather data: {str(e)}")
+        return None
 
-    for i in range(days):
-        date = (now - timedelta(days=i+1)).date().isoformat()
-        result.append({
-            "date": date,
-            "temperature": randint(18, 25),
-            "wind speed": round(randint(30, 70) / 10, 1),
-            "visibility": randint(8, 10),
-            "pressure": randint(1008, 1018),
-            "humidity": randint(50, 75)
-        })
+def fetch_and_store_spb_weather():
+    session = Session()
+    try:
+        end_date = date.today()
+        start_date = end_date - timedelta(days=30)
+        url = f"https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/Saint%20Petersburg/{start_date}/{end_date}?unitGroup=metric&include=days&key={os.getenv('VC_API_KEY')}&contentType=json"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        weather_data = response.json().get('days', [])
 
-    return result
+        existing_dates = {r.date for r in session.query(WeatherRecord.date).filter_by(city='Saint Petersburg').all()}
+
+        for day in weather_data:
+            record_date = date.fromisoformat(day['datetime'])
+            
+            if record_date in existing_dates:
+                session.query(WeatherRecord).filter_by(
+                    date=record_date,
+                    city='Saint Petersburg'
+                ).update({
+                    'temperature': day['temp'],
+                    'wind_speed': round(day['windspeed'] / 3.6, 1),
+                    'visibility': day['visibility'],
+                    'pressure': day['pressure'],
+                    'humidity': day['humidity']
+                })
+            else:
+                new_record = WeatherRecord(
+                    date=record_date,
+                    temperature=day['temp'],
+                    wind_speed=round(day['windspeed'] / 3.6, 1),
+                    visibility=day['visibility'],
+                    pressure=day['pressure'],
+                    humidity=day['humidity'],
+                    city='Saint Petersburg'
+                )
+                session.add(new_record)
+
+        session.commit()
+        return True
+    except Exception as e:
+        session.rollback()
+        print(f"Error updating SPb weather: {str(e)}")
+        return False
+    finally:
+        session.close()
+
+def get_spb_weather_from_db(days):
+    """Получение данных из базы для СПб"""
+    session = Session()
+    try:
+        end_date = date.today()
+        start_date = end_date - timedelta(days=days-1)
+        
+        records = session.query(WeatherRecord)\
+            .filter(WeatherRecord.city == 'Saint Petersburg')\
+            .filter(WeatherRecord.date >= start_date)\
+            .filter(WeatherRecord.date <= end_date)\
+            .order_by(WeatherRecord.date.asc())\
+            .all()
+        
+        return [{
+            "date": record.date.isoformat(),
+            "temperature": record.temperature,
+            "wind_speed": record.wind_speed,
+            "visibility": record.visibility,
+            "pressure": record.pressure,
+            "humidity": record.humidity,
+        } for record in records]
+    except Exception as e:
+        print(f"Error fetching SPb weather: {str(e)}")
+        return None
+    finally:
+        session.close()
 
 
-def past_weather_3days(city_name, region, country_name):
+def past_weather(city_name, region, country_name, days):
     lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
     if status_code == 200:
-        return get_past_weather_data(lat, lon, 3, api_key), 200
-    return None, status_code
-
-
-def past_weather_10days(city_name, region, country_name):
-    lat, lon, status_code = get_lan_lon(api_key, city_name, region, country_name)
-    if status_code == 200:
-        return get_past_weather_data(lat, lon, 10, api_key), 200
+        return get_past_weather_data(lat, lon, days, api_key_days), 200
     return None, status_code
