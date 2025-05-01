@@ -24,17 +24,17 @@ export const fetchWeatherAction = createAsyncThunk<
           city_name: cityName
         });
 
-        const { data } = await api.get<ServerWeatherInfo>(`http://localhost:5000/?${params.toString()}`);
+        const { data } = await api.get<ServerWeatherInfo>(`/?${params.toString()}`);
         dispatch(changeCity(cityName));
         dispatch(loadInfo(data));
 
-        const forecast = (await api.get<ForecastItems>(`http://localhost:5000/forecast/?${params.toString()}`));
+        const forecast = (await api.get<ForecastItems>(`/forecast/?${params.toString()}`));
         dispatch(loadForecast(forecast.data));
 
-        const data3Days = (await api.get<ChartsInfo[]>(`http://localhost:5000/3days/?${params.toString()}`));
+        const data3Days = (await api.get<ChartsInfo[]>(`/3days/?${params.toString()}`));
         dispatch(loadChartsData3Days(data3Days.data));
 
-        const data10Days = (await api.get<ChartsInfo[]>(`http://localhost:5000/10days/?${params.toString()}`));
+        const data10Days = (await api.get<ChartsInfo[]>(`/10days/?${params.toString()}`));
         dispatch(loadChartsData10Days(data10Days.data));
 
         dispatch(setLoadingStatus(false));

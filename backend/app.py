@@ -70,4 +70,4 @@ if __name__ == '__main__':
     from weather import fetch_and_store_spb_weather
     success = fetch_and_store_spb_weather()
     print("Data fetched and stored:", success)
-    app.run(debug=True)
+    # app.run(debug=True)
