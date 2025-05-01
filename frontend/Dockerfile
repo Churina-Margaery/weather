@@ -22,6 +22,8 @@ FROM nginx:alpine
 # Copy built files from build stage to nginx
 COPY --from=build /app/dist /app
 
+RUN chmod -R 755 /app
+
 # Copy nginx configuration if needed
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
