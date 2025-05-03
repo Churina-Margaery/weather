@@ -10,9 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-env:
-  API_URL: http://localhost:5000  # 🔁 здесь укажи нужный адрес бэкенда
-
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -32,17 +29,17 @@ jobs:
     name: UI-tests and Report
     needs: unit-test
     timeout-minutes: 15
-
+    
     steps:
       # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Build frontend
-      - name: Build frontend
+      # 2. Build frontend with environment variable
+      - name: Build Frontend
         working-directory: ./frontend
         env:
-          VITE_WEATHER_SERVER: ${{ env.API_URL }}
+          VITE_WEATHER_SERVER: ${API_URL}
         run: |
           npm ci
           npm run build
@@ -50,10 +47,8 @@ jobs:
       # 3. Start frontend server
       - name: Start Frontend
         working-directory: ./frontend
-        env:
-          VITE_WEATHER_SERVER: ${{ env.API_URL }}
         run: |
-          npm start > frontend.log 2>&1 &
+          npm start > frontend.log 2>&1 & 
           sleep 15
           curl --retry 5 --retry-delay 3 --retry-all-errors http://localhost:5173 || cat frontend.log
 
@@ -71,7 +66,7 @@ jobs:
         with:
           chrome-version: 'latest'
 
-      # 6. Run UI tests
+      # 6. Run tests with optimized Selenide config
       - name: Run Tests
         working-directory: ./ui_test
         env:
@@ -87,7 +82,6 @@ jobs:
             -Dwebdriver.chrome.whitelistedIps="" \
             -Dallure.results.directory=target/allure-results
 
-      # 7. Allure report
       - name: Copy History
         uses: actions/checkout@v4
         if: always()
