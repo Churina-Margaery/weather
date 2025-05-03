@@ -29,7 +29,11 @@ def get_3_days_weather():
         data = get_spb_weather_from_db(3)
         if data:
             return jsonify(data), 200
-        return jsonify({"detail": "Failed to get SPb weather data"}), 500
+        else:
+            data, status_code = past_weather(city_name, state_name, country_name, 3)
+            if status_code == 200:
+                return jsonify(data), 200
+            return jsonify({"detail": "Failed to get weather data"}), status_code
     else:
         data, status_code = past_weather(city_name, state_name, country_name, 3)
         if status_code == 200:
@@ -46,7 +50,11 @@ def get_10_days_weather():
         data = get_spb_weather_from_db(10)
         if data:
             return jsonify(data), 200
-        return jsonify({"detail": "Failed to get SPb weather data"}), 500
+        else:
+            data, status_code = past_weather(city_name, state_name, country_name, 10)
+            if status_code == 200:
+                return jsonify(data), 200
+            return jsonify({"detail": "Failed to get weather data"}), status_code
     else:
         data, status_code = past_weather(city_name, state_name, country_name, 10)
         if status_code == 200:
