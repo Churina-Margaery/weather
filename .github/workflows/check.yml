@@ -21,7 +21,7 @@ jobs:
       - name: Running unit-tests
         working-directory: ./frontend
         run: |
-          npm ci
+          npm install  # Устанавливаем зависимости перед тестами
           npm run test
 
   test:
@@ -39,8 +39,8 @@ jobs:
       - name: Start Frontend
         working-directory: ./frontend
         run: |
-          npm ci
-          npm start > frontend.log 2>&1 &
+          npm install  # Устанавливаем зависимости перед запуском сервера
+          npm start > frontend.log 2>&1 &  # Запуск фронтенда
           sleep 15
           curl --retry 5 --retry-delay 3 --retry-all-errors http://localhost:5173 || cat frontend.log
 
@@ -80,6 +80,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+
       - name: Build Report
         uses: simple-elf/allure-report-action@master
         if: always()
@@ -89,6 +90,7 @@ jobs:
           allure_history: allure-history
           gh_pages: gh-pages
           keep_reports: 20
+
       - name: Publish Report
         if: always()
         uses: peaceiris/actions-gh-pages@v2
@@ -102,5 +104,3 @@ jobs:
         run: |
           pkill -f "npm start" || true
           pkill -f "chrome" || true
-
- 
