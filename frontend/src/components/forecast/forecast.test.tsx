@@ -5,6 +5,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Forecast } from './forecast';
 import { mockForecast } from '../../utils/mocks';
 import { withStore } from '../../utils/mock-component';
+import { AppState } from '../../types/state/state-types';
 
 const testStore = configureStore({
   reducer: {
@@ -61,33 +62,33 @@ describe('Forecast component', () => {
     expect(screen.queryByRole('forecast-item-container')).toBeNull();
   });
 
-  // it('should generate unique keys', () => {  // TODO надо ли этот тест?
-
-  //   const { container } = render(
-  //     <Provider store={testStore}>
-  //       <Forecast />
-  //     </Provider>
-  //   );
-
-  //   // Проверяем наличие ключей
-  //   const items = container.querySelectorAll('[key]');
-  //   const keys = Array.from(items).map(item => item.getAttribute('key'));
-  //   console.log(items);
-  //   expect(keys).toEqual([
-  //     '0-2025-03-09T12:00:00',
-  //     '1-2025-03-10T15:00:00'
-  //   ]);
-  // });
-
-  // import { store } from '../../store';
+  const mockState: AppState = {
+    activeCityName: '',
+    date: '',
+    temperature: 0,
+    description: '',
+    icon: '',
+    weatherInfo: {
+      'Wind speed': 0,
+      Visibility: 0,
+      Pressure: 0,
+      Humidity: 0,
+      Sunrise: '',
+      Sunset: ''
+    },
+    forecast: [
+      { date: '2025-03-09T12:00:00', temperature: 20 }
+    ],
+    chartsInfo3Days: [],
+    chartsInfo10Days: [],
+    darkTheme: false,
+    isLoading: false,
+    isError: false,
+  };
 
   it('should work with real store', () => {
     const { withStoreComponent } = withStore(<Forecast />, {
-      Main: {  // TODO types(
-        forecast: [
-          { date: '2025-03-09T12:00:00', temperature: 20 }
-        ]
-      }
+      Main: mockState
     });
 
     render(withStoreComponent);

@@ -46,7 +46,6 @@ export function ChartBlock({ period = 3 }: ChartBlockProps): JSX.Element {
       <TemperatureChart
         isDarkTheme={useAppSelector(getIsDarkTheme)}
         data={data}
-        days={period}
         value={selectedValue}
       />
     </div>

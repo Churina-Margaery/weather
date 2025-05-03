@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import { describe, it, expect, vi } from 'vitest';
 import { SmallCards } from './small-cards';
 import { mockData } from '../../utils/mocks';
-import { withStore } from '../../utils/mock-component';
 
 const testStore = configureStore({
   reducer: {
