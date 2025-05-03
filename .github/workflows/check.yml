@@ -47,6 +47,8 @@ jobs:
       # 3. Start frontend server
       - name: Start Frontend
         working-directory: ./frontend
+        env:
+          VITE_WEATHER_SERVER: ${API_URL}
         run: |
           npm start > frontend.log 2>&1 & 
           sleep 15
