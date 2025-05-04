@@ -10,6 +10,9 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  VITE_WEATHER_SERVER: http://127.0.0.1:5000 
+
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -21,7 +24,7 @@ jobs:
       - name: Running unit-tests
         working-directory: ./frontend
         run: |
-          npm ci
+          npm install
           npm run test
 
   test:
@@ -29,22 +32,22 @@ jobs:
     name: UI-tests and Report
     needs: unit-test
     timeout-minutes: 15
-    
+
     steps:
-      # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Start frontend server
-      - name: Start Frontend
+      - name: Build and Start Frontend
         working-directory: ./frontend
+        env:
+          VITE_WEATHER_SERVER: ${{ env.VITE_WEATHER_SERVER }}
         run: |
-          npm ci
-          npm start > frontend.log 2>&1 &
+          npm install
+          npm run build
+          npm start > frontend.log 2>&1 & 
           sleep 15
           curl --retry 5 --retry-delay 3 --retry-all-errors http://localhost:5173 || cat frontend.log
 
-      # 3. Setup Java 17
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
@@ -52,13 +55,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # 4. Install Chrome and WebDriver
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: 'latest'
 
-      # 5. Run tests with optimized Selenide config
       - name: Run Tests
         working-directory: ./ui_test
         env:
@@ -80,6 +81,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+
       - name: Build Report
         uses: simple-elf/allure-report-action@master
         if: always()
@@ -89,6 +91,7 @@ jobs:
           allure_history: allure-history
           gh_pages: gh-pages
           keep_reports: 20
+
       - name: Publish Report
         if: always()
         uses: peaceiris/actions-gh-pages@v2
@@ -97,10 +100,7 @@ jobs:
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
 
-      # 8. Cleanup
       - name: Stop Frontend
         run: |
           pkill -f "npm start" || true
           pkill -f "chrome" || true
-
- 

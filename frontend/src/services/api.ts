@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 
 const BACKEND_URL = <string>import.meta.env.VITE_WEATHER_SERVER;
@@ -10,24 +10,11 @@ export const createAPI = (): AxiosInstance => {
     timeout: REQUEST_TIMEOUT,
   });
 
-  // api.interceptors.request.use(
-  //   (config: InternalAxiosRequestConfig) => {
-  //     const token = getToken();
-
-  //     if (token && config.headers) {
-  //       config.headers['x-token'] = token;
-  //     }
-
-  //     return config;
-  //   },
-  // );
-
   api.interceptors.response.use(
     (response) => response,
     (error: AxiosError<{ error: string }>) => {
       if (error.response?.status === StatusCodes.NOT_FOUND) {
-        //todo to not found
-        //browserHistory.push(AppRoute.PageNotFound)
+        // not found
       }
       throw error;
     }
