@@ -8,7 +8,7 @@
 6. Зарегистрироваться на сайте Visual Crossing для получения собственного API ключа: https://www.visualcrossing.com
 ![alt text](sources/find_api_2.png)
 ![alt text](sources/copy_key_2.png)
-7. Создать файл .env, куда нужно будеть вставить свои API ключи.
+7. Создать файл .env, куда нужно будет вставить свои API ключи.
 ![alt text](sources/insert_keys.png)
 8. Создание базы данных и пользователя: sudo -u postgres psql(для Linux/Mac) psql -U postgres(для Windows)
 CREATE DATABASE weather_db;

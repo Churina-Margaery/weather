@@ -1,10 +1,11 @@
+//import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { vi } from 'vitest';
 import { MainCard } from './main-card';
 import { getTemp, getCity, getDate, getIcon, getDescription } from '../../store/main-process/selectors';
-
+// В начале тестового файла (перед импортами)
+declare const vi: typeof import('vitest').vi;
 vi.mock('../../store/main-process/selectors', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../store/main-process/selectors')>();
   return {
@@ -18,11 +19,11 @@ vi.mock('../../store/main-process/selectors', async (importOriginal) => {
 });
 
 describe('MainCard component', () => {
-  const mockGetTemp = getTemp as vi.Mock;
-  const mockGetCity = getCity as vi.Mock;
-  const mockGetDate = getDate as vi.Mock;
-  const mockGetIcon = getIcon as vi.Mock;
-  const mockGetDescription = getDescription as vi.Mock;
+  const mockGetTemp = vi.mocked(getTemp);
+  const mockGetCity = vi.mocked(getCity);
+  const mockGetDate = vi.mocked(getDate);
+  const mockGetIcon = vi.mocked(getIcon);
+  const mockGetDescription = vi.mocked(getDescription);
 
   const createMockStore = (state: object) => configureStore({
     reducer: {

@@ -7,7 +7,7 @@ export type ForecastItem = {
 
 export type ForecastItems = ForecastItem[];
 
-export type WeatherChartTypes = "humidity" | "pressure" | "temperature" | "visibility" | "wind speed";
+export type WeatherChartTypes = "humidity" | "pressure" | "temperature" | "visibility" | "wind_speed";
 
 export type WeatherInfo = {
   "Wind speed": number,
@@ -24,7 +24,7 @@ export type ChartsInfo = {
   "pressure": number,
   "temperature": number,
   "visibility": number,
-  "wind speed": number,
+  "wind_speed": number,
 };
 
 

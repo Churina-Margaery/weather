@@ -5,19 +5,18 @@ import { ChartsInfo } from '../../types/state/state-types';
 
 interface TemperatureChartProps {
   isDarkTheme: boolean;
-  days: 3 | 10;
   data: ChartsInfo[];
   value: WeatherChartTypes;
 }
 
-export function TemperatureChart({ isDarkTheme, days, data, value }: TemperatureChartProps): JSX.Element {
+export function TemperatureChart({ isDarkTheme, data, value }: TemperatureChartProps): JSX.Element {
   const textColor = isDarkTheme ? '#ffffff' : '#333333';
   const axisColor = isDarkTheme ? '#cccccc' : '#666666';
   const gridColor = isDarkTheme ? '#444444' : '#eeeeee';
   const tooltipBg = isDarkTheme ? '#424242' : '#ffffff';
   const unit = {
     temperature: '°C',
-    "wind speed": 'm/s',
+    wind_speed: 'm/s',
     pressure: 'hPa',
     humidity: '%',
     visibility: 'km'
