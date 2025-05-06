@@ -1,0 +1,7 @@
+# docker compose -f .\docker-compose.unit-test.yml up --abort-on-container-exit
+
+services:
+  frontend_unit_tests:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.unit-tests
