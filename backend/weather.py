@@ -156,6 +156,13 @@ def get_past_weather_data(lat, lon, days, API_key):
         return None
 
 def fetch_and_store_spb_weather():
+    """Попытка обновить данные СПб в БД с обработкой ошибок"""
+    from database import engine, Session
+    
+    if engine is None:
+        print("Database engine not available, skipping update")
+        return False
+    
     session = Session()
     try:
         end_date = date.today()
@@ -204,7 +211,13 @@ def fetch_and_store_spb_weather():
         session.close()
 
 def get_spb_weather_from_db(days):
-    """Получение данных из базы для СПб"""
+    """Получение данных из базы для СПб с fallback на API"""
+    from database import engine, Session
+    
+    if engine is None:
+        print("Database engine not available, falling back to API")
+        return get_past_weather_data(59.9343, 30.3351, days, api_key_days)
+    
     session = Session()
     try:
         end_date = date.today()
@@ -217,6 +230,10 @@ def get_spb_weather_from_db(days):
             .order_by(WeatherRecord.date.asc())\
             .all()
         
+        if not records:
+            print("No data in DB, falling back to API")
+            return get_past_weather_data(59.9343, 30.3351, days, api_key_days)
+        
         return [{
             "date": record.date.isoformat(),
             "temperature": record.temperature,
@@ -226,8 +243,8 @@ def get_spb_weather_from_db(days):
             "humidity": record.humidity,
         } for record in records]
     except Exception as e:
-        print(f"Error fetching SPb weather: {str(e)}")
-        return None
+        print(f"Error fetching SPb weather from DB, falling back to API: {str(e)}")
+        return get_past_weather_data(59.9343, 30.3351, days, api_key_days)
     finally:
         session.close()
 
