@@ -17,7 +17,7 @@ public class BaseTest {
     public void setupConf() {
 
         Configuration.browser = CHROME;
-        Configuration.baseUrl = "http://localhost:5173";
+        Configuration.baseUrl = System.getProperty("selenide.baseUrl", "http://localhost:5173");
         Configuration.timeout = 10000;
         
         ChromeOptions options = new ChromeOptions();
