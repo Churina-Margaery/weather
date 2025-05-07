@@ -1,4 +1,4 @@
-# docker compose -f .\docker-compose.ui-test.yml up --abort-on-container-exit
+# docker compose -f docker-compose.ui-test.yml up --build --abort-on-container-exit
 services:
   frontend:
     build:
@@ -6,7 +6,7 @@ services:
       args:
         VITE_WEATHER_SERVER: http://ui_test:5000
     networks:
-      - weather-network
+      - weather-network-ui-test
   
   ui_test:
     build:
@@ -16,9 +16,9 @@ services:
     depends_on:
       - frontend
     networks:
-      - weather-network
+      - weather-network-ui-test
 
 
 networks:
-  weather-network:
+  weather-network-ui-test:
     driver: bridge
