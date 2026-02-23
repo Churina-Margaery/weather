@@ -28,7 +28,7 @@ describe('Forecast component', () => {
     expect(getByTestId('forecast-container')).toBeInTheDocument();
   })
 
-  it('should display forecast items', () => {
+  it('should display all forecast items', () => {
 
     render(
       <Provider store={testStore}>

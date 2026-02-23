@@ -26,7 +26,7 @@ describe('Small Cards component', () => {
     expect(getByTestId('small-cards-container')).toBeInTheDocument();
   })
 
-  it('should display small cards', () => {
+  it('should display all small cards', () => {
 
     render(
       <Provider store={testStore}>
