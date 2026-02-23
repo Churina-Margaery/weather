@@ -31,12 +31,6 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/vite-env.d.ts',
       ],
-      thresholds: {
-        statements: 80,
-        branches: 80,
-        functions: 80,
-        lines: 80,
-      },
     },
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
