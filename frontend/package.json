@@ -7,11 +7,11 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx",
     "preview": "vite preview",
-    "test": "vitest --passWithNoTests",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "test:report": "vitest run --reporter=html --reporter=json",
-    "test:watch": "vitest"
+    "test": "vitest --passWithNoTests -c vitest.config.ts",
+    "test:ui": "vitest --ui -c vitest.config.ts",
+    "test:coverage": "vitest run --coverage -c vitest.config.ts",
+    "test:report": "vitest run --reporter=html --reporter=json -c vitest.config.ts",
+    "test:watch": "vitest -c vitest.config.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "1.9.7",
