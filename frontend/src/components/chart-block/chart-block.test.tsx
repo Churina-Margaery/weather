@@ -11,13 +11,13 @@ vi.mock('../../store/main-process/selectors', () => ({
 
 vi.mock('../../store', () => ({
   useAppSelector: (selector: unknown) => {
-    return (selector as ReturnType<typeof vi.fn>)();
+    return new (selector as ReturnType<typeof vi.fn>)();
   },
 }));
 
 const temperatureChartMock = vi.fn(() => <div data-testid="temperature-chart" />);
 vi.mock('../chart/chart', () => ({
-  TemperatureChart: (props: unknown) => temperatureChartMock(props),
+  TemperatureChart: () => temperatureChartMock(),
 }));
 
 describe('ChartBlock component', () => {
