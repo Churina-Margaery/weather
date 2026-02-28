@@ -11,27 +11,31 @@ vi.mock('../../store/main-process/selectors', () => ({
 
 vi.mock('../../store', () => ({
   useAppSelector: (selector: unknown) => {
-    return new (selector as ReturnType<typeof vi.fn>)();
+    return (selector as () => unknown)();
   },
 }));
 
-const temperatureChartMock = vi.fn(() => <div data-testid="temperature-chart" />);
+const temperatureChartMock: any = vi.fn(() => <div data-testid="temperature-chart" />);
+
 vi.mock('../chart/chart', () => ({
-  TemperatureChart: () => temperatureChartMock(),
+  TemperatureChart: (props: unknown) => temperatureChartMock(props),
 }));
 
 describe('ChartBlock component', () => {
+  const data3 = [
+    { date: '2025-03-09', temperature: 20, wind_speed: 3, humidity: 40, pressure: 760, visibility: 10 },
+  ];
+  const data10 = [
+    { date: '2025-03-01', temperature: 10, wind_speed: 4, humidity: 50, pressure: 755, visibility: 8 },
+    { date: '2025-03-02', temperature: 11, wind_speed: 5, humidity: 55, pressure: 756, visibility: 9 },
+  ];
+
   beforeEach(() => {
     vi.clearAllMocks();
 
     (getIsDarkTheme as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
-    (get3DaysData as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-      { date: '2025-03-09', temperature: 20, wind_speed: 3, humidity: 40, pressure: 760, visibility: 10 },
-    ]);
-    (get10DaysData as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
-      { date: '2025-03-01', temperature: 10, wind_speed: 4, humidity: 50, pressure: 755, visibility: 8 },
-      { date: '2025-03-02', temperature: 11, wind_speed: 5, humidity: 55, pressure: 756, visibility: 9 },
-    ]);
+    (get3DaysData as unknown as ReturnType<typeof vi.fn>).mockReturnValue(data3);
+    (get10DaysData as unknown as ReturnType<typeof vi.fn>).mockReturnValue(data10);
   });
 
   it('should render component', () => {
@@ -49,7 +53,7 @@ describe('ChartBlock component', () => {
 
     expect(temperatureChartMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: (get3DaysData as unknown as ReturnType<typeof vi.fn>).mock.results[0].value,
+        data: data3,
       })
     );
   });
@@ -62,7 +66,7 @@ describe('ChartBlock component', () => {
 
     expect(temperatureChartMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: (get10DaysData as unknown as ReturnType<typeof vi.fn>).mock.results[0].value,
+        data: data10,
       })
     );
   });
@@ -135,7 +139,7 @@ describe('ChartBlock component', () => {
 
     expect(temperatureChartMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        data: (get10DaysData as unknown as ReturnType<typeof vi.fn>).mock.results[0].value,
+        data: data10,
         value: 'pressure',
         isDarkTheme: false,
       })
