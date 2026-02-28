@@ -7,7 +7,11 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx",
     "preview": "vite preview",
-    "test": "vitest --passWithNoTests"
+    "test": "vitest --passWithNoTests -c vitest.config.ts",
+    "test:ui": "vitest --ui -c vitest.config.ts",
+    "test:coverage": "vitest run --coverage -c vitest.config.ts",
+    "test:report": "vitest run --reporter=html --reporter=json -c vitest.config.ts",
+    "test:watch": "vitest -c vitest.config.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "1.9.7",
@@ -40,6 +44,8 @@
     "@typescript-eslint/eslint-plugin": "6.7.4",
     "@typescript-eslint/parser": "6.7.4",
     "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "axios-mock-adapter": "1.22.0",
     "eslint": "8.51.0",
     "eslint-config-htmlacademy": "9.1.1",
@@ -49,7 +55,7 @@
     "jsdom": "22.1.0",
     "typescript": "5.2.2",
     "vite": "^5.4.19",
-    "vitest": "^0.34.6"
+    "vitest": "^4.0.18"
   },
   "browserslist": {
     "production": [
