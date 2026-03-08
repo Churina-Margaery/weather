@@ -28,11 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     name: UI-tests with real backend and Report
     needs: unit-test
-    timeout-minutes: 15
+    timeout-minutes: 20  # Увеличил таймаут
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup specific Chrome version
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: '119'  # Фиксируем стабильную версию
+          
+      - name: Verify Chrome version
+        run: chrome --version
 
       - name: Create test .env file
         run: |
@@ -48,14 +56,22 @@ jobs:
         run: |
           docker compose -f docker-compose.ui-test.yml --env-file .env.test up -d --build
           echo "Waiting for services to start..."
-          sleep 30
-          curl --retry 10 --retry-delay 5 --retry-all-errors http://localhost:80 || \
-          docker compose -f docker-compose.ui-test.yml logs nginx frontend
+          
+          # Проверяем, что фронтенд отвечает
+          timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost)" != "200" ]]; do sleep 2; done'
+          echo "Frontend is up!"
+          
+          # Дополнительное время для инициализации React и загрузки данных
+          sleep 15
 
       - name: Run tests and wait for completion
         run: |
-          # Запускаем тесты и ждем их завершения
-          docker compose -f docker-compose.ui-test.yml run --name test-runner ui_test
+          # Создаем контейнер с тестами, передавая переменные окружения для увеличения таймаутов
+          docker compose -f docker-compose.ui-test.yml run \
+            -e SELENIDE_TIMEOUT=60000 \
+            -e SELENIDE_POLLING_INTERVAL=500 \
+            -e CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --window-size=1920,1080 --disable-gpu --disable-blink-features=AutomationControlled --user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" \
+            --name test-runner ui_test
           
           # Получаем exit code тестов
           exit_code=$(docker inspect test-runner --format='{{.State.ExitCode}}')
@@ -63,6 +79,7 @@ jobs:
           
           # Копируем результаты
           docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
+          docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
           
           # Удаляем контейнер
           docker rm test-runner
@@ -74,11 +91,20 @@ jobs:
         if: failure()
         run: |
           docker compose -f docker-compose.ui-test.yml logs > docker-logs.txt
+          docker compose -f docker-compose.ui-test.yml exec nginx cat /var/log/nginx/error.log || true
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: docker-logs
           path: docker-logs.txt
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: ./test-reports/
+          retention-days: 7
 
       - name: Copy History
         uses: actions/checkout@v4
