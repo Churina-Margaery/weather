@@ -46,9 +46,6 @@ jobs:
           
           echo "========== .env contents (keys hidden) =========="
           cat .env | sed 's/\(API_KEY=\)[^:]*/\1***/'
-          echo "========== .env file location =========="
-          pwd
-          ls -la .env
 
       - name: Start services with Docker Compose
         run: |
@@ -63,12 +60,6 @@ jobs:
         run: |
           echo "========== RUNNING CONTAINERS =========="
           docker compose -f docker-compose.ui-test.yml ps
-          
-          echo "========== CHECKING PORTS =========="
-          docker compose -f docker-compose.ui-test.yml port nginx 80 || echo "Nginx port not exposed"
-          
-          echo "========== DOCKER COMPOSE CONFIG =========="
-          docker compose -f docker-compose.ui-test.yml config | grep -A 5 -B 5 "API_KEY" || echo "No API_KEY in config"
 
       - name: Debug backend environment
         run: |
@@ -78,7 +69,6 @@ jobs:
       - name: Verify database tables
         run: |
           echo "========== VERIFYING DATABASE TABLES =========="
-          
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "Failed to list tables"
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\d weather_records" || echo "Table weather_records does not exist"
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "Cannot query weather_records"
@@ -86,49 +76,36 @@ jobs:
       - name: Health check - Database and API endpoints
         run: |
           echo "========== HEALTH CHECK =========="
-          
           echo "=== Database tables ==="
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "❌ Failed to list tables"
-          
           echo -e "\n=== Weather records count ==="
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "❌ Table weather_records does not exist"
-          
           echo -e "\n=== API Endpoints Status ==="
-          
           echo -n "Current weather: "
           curl -s -o /dev/null -w "%{http_code}" http://localhost/api/?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
-          
           echo -n "3 days forecast: "
           curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/3days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
-          
           echo -n "10 days forecast: "
           curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/10days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
-          
           echo -e "\n=== Recent backend errors ==="
           docker compose -f docker-compose.ui-test.yml logs backend --tail 50 | grep -i "error\|exception\|fail" || echo "No recent errors found"
-          
           echo -e "\n========== HEALTH CHECK COMPLETE =========="
 
       - name: Debug 3/10 days endpoints
         run: |
           echo "========== DEBUG 3/10 DAYS ENDPOINTS =========="
-          
           echo "=== Backend health check (current weather) ==="
           curl -I http://localhost/api/?city_name=Saint-Petersburg
-          
           echo -e "\n=== 3 days forecast - RAW RESPONSE (with headers) ==="
           curl -v http://localhost/api/3days?city_name=Saint-Petersburg 2>&1
-          
           echo -e "\n=== 10 days forecast - RAW RESPONSE (with headers) ==="
           curl -v http://localhost/api/10days?city_name=Saint-Petersburg 2>&1
 
       - name: Debug 3/10 days with redirects
         run: |
           echo "========== DEBUG 3/10 DAYS WITH REDIRECTS =========="
-          
           echo "=== 3 days forecast (with redirect) ==="
           curl -L http://localhost/api/3days?city_name=Saint-Petersburg | jq . || echo "Failed to get 3 days forecast with redirect"
-          
           echo -e "\n=== 10 days forecast (with redirect) ==="
           curl -L http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to get 10 days forecast with redirect"
 
@@ -137,59 +114,37 @@ jobs:
           echo "========== BACKEND LOGS BEFORE TESTS =========="
           docker compose -f docker-compose.ui-test.yml logs backend --tail 100
 
-      - name: Debug page HTML
+      - name: 🔧 REBUILD FRONTEND - FIX FOR EMPTY PAGE
         run: |
-          echo "========== PAGE HTML DEBUG =========="
+          echo "========== REBUILDING FRONTEND WITH NO CACHE =========="
+          # Очистить кэш и пересобрать фронтенд
+          docker compose -f docker-compose.ui-test.yml build --no-cache frontend
           
-          # Создаём директорию для отчётов
+          # Перезапустить контейнер
+          docker compose -f docker-compose.ui-test.yml up -d frontend
+          
+          # Проверить, что файлы на месте
+          echo "========== CHECKING FRONTEND FILES =========="
+          docker compose -f docker-compose.ui-test.yml exec frontend ls -la /usr/share/nginx/html
+          
+          # Подождать немного для полной инициализации
+          sleep 5
+          
+          # Проверить, что страница теперь нормальная
+          echo "========== CHECKING PAGE AFTER REBUILD =========="
+          curl -s http://localhost | head -20
+
+      - name: Debug page HTML after rebuild
+        run: |
+          echo "========== PAGE HTML DEBUG AFTER REBUILD =========="
           mkdir -p ./test-reports
-          
           curl -s http://localhost > page.html
-          
           echo "=== Looking for key elements in HTML ==="
           grep -A 2 -B 2 "header__city-search" page.html || echo "❌ Search input not found in HTML"
           grep -A 2 -B 2 "header__btn" page.html || echo "❌ Theme button not found in HTML"
           grep -A 2 -B 2 "overview__item-value" page.html || echo "❌ Temperature element not found in HTML"
           grep -A 2 -B 2 "forecast-container" page.html || echo "❌ Forecast container not found in HTML"
-          grep -A 2 -B 2 'name="period3"' page.html || echo "❌ Period3 select not found in HTML"
-          grep -A 2 -B 2 'name="period10"' page.html || echo "❌ Period10 select not found in HTML"
-          
-          echo -e "\n=== Checking for data in HTML ==="
-          grep -o '"temperature":[^,]*' page.html | head -5 || echo "No temperature data found"
-          grep -o '"date":"[^"]*"' page.html | head -5 || echo "No date data found"
-          
           cp page.html ./test-reports/ || echo "Failed to copy page.html"
-
-      - name: Debug browser console
-        run: |
-          echo "========== BROWSER CONSOLE LOGS =========="
-          
-          # Получаем заголовки и проверяем CORS
-          echo "=== HTTP Headers ==="
-          curl -I http://localhost
-          
-          # Проверяем, есть ли React в HTML
-          echo -e "\n=== React presence ==="
-          curl -s http://localhost | grep -o "react" | head -5 || echo "⚠️ React not found in HTML"
-          
-          # Проверяем, есть ли ошибки в скриптах
-          echo -e "\n=== Error presence ==="
-          curl -s http://localhost | grep -o "error" | head -5 || echo "✅ No 'error' strings found in HTML"
-          
-          # Проверяем загрузку скриптов
-          echo -e "\n=== Script tags ==="
-          curl -s http://localhost | grep -o '<script src="[^"]*"' | head -10 || echo "No script tags found"
-          
-          # Проверяем, загружается ли main.js
-          echo -e "\n=== Main JS file ==="
-          curl -s http://localhost | grep -o 'main\.[^"]*\.js' | head -5 || echo "No main.js found"
-          
-          # Проверяем, отвечает ли main.js
-          MAIN_JS=$(curl -s http://localhost | grep -o 'main\.[^"]*\.js' | head -1)
-          if [ ! -z "$MAIN_JS" ]; then
-            echo -e "\n=== Checking main.js ==="
-            curl -I http://localhost/$MAIN_JS
-          fi
 
       - name: Build test image with fixed Chrome version
         run: |
@@ -199,36 +154,26 @@ jobs:
             -t ui_test:fixed \
             ./ui_test
 
-      - name: Run tests with fixed Chrome and screenshots
+      - name: Run tests with fixed Chrome
         run: |
-          echo "========== RUNNING TESTS WITH SCREENSHOTS =========="
+          echo "========== RUNNING TESTS =========="
           
           docker compose -f docker-compose.ui-test.yml run \
             -e SELENIDE_TIMEOUT=90000 \
             -e SELENIDE_POLLING_INTERVAL=1000 \
-            -e SCREENSHOTS_ON_FAILURE=true \
             --name test-runner \
             ui_test
           
           exit_code=$?
           echo "Test exit code: $exit_code"
           
-          echo "========== COLLECTING SCREENSHOTS =========="
-          mkdir -p ./screenshots
-          docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
-          docker cp test-runner:/app/screenshots/. ./screenshots/ || true
+          echo "========== COLLECTING RESULTS =========="
+          mkdir -p ./allure-results ./test-reports
           docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
+          docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
           
           docker rm test-runner
           exit $exit_code
-
-      - name: Upload screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-screenshots
-          path: ./screenshots/
-          retention-days: 7
 
       - name: Upload test reports
         if: always()
@@ -239,7 +184,7 @@ jobs:
           retention-days: 7
 
       - name: Upload page HTML
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: page-html
@@ -252,7 +197,6 @@ jobs:
           echo "========== COLLECTING ALL LOGS =========="
           docker compose -f docker-compose.ui-test.yml logs > docker-logs.txt
           docker compose -f docker-compose.ui-test.yml exec nginx cat /var/log/nginx/error.log || true
-          docker compose -f docker-compose.ui-test.yml logs backend --tail 200 >> docker-logs.txt
           
       - uses: actions/upload-artifact@v4
         if: failure()

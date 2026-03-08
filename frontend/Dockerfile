@@ -22,8 +22,11 @@ FROM nginx:alpine
 # Копируем собранные файлы в правильную директорию nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration if needed
+# Копируем конфигурацию nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Даем правильные права
+RUN chmod -R 755 /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
