@@ -25,6 +25,7 @@ RUN mvn dependency:go-offline
 COPY . .
 RUN mvn clean package -DskipTests
 
+# Тесты будут запускаться при старте контейнера
 CMD mvn test \
     -Dselenide.headless=true \
     -Dselenide.browser=chrome \

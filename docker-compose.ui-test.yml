@@ -1,75 +1,14 @@
-services:
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - weather-network-ui-test
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_WEATHER_SERVER: http://backend:5000
-    depends_on:
-      - backend
-    networks:
-      - weather-network-ui-test
-
-  backend:
-    build:
-      context: ./backend
-    environment:
-      - OW_API_KEY=${OW_API_KEY}
-      - VC_API_KEY=${VC_API_KEY}
-      - DB_USER=${DB_USER:-test_user}
-      - DB_PASSWORD=${DB_PASSWORD:-test_password}
-      - DB_NAME=${DB_NAME:-test_db}
-      - DB_HOST=db
-      - DB_PORT=5432
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - weather-network-ui-test
-
-  db:
-    image: postgres:17-alpine
-    restart: always
-    environment:
-      - POSTGRES_USER=${DB_USER:-test_user}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-test_password}
-      - POSTGRES_DB=${DB_NAME:-test_db}
-    volumes:
-      - postgres_test_data:/var/lib/postgresql/data
-    networks:
-      - weather-network-ui-test
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-test_user} -d ${DB_NAME:-test_db}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  ui_test:
-    build:
-      context: ./ui_test
-      dockerfile: Dockerfile
-    environment:
-      - FRONTEND_URL=http://nginx:80
-    depends_on:
-      - nginx
-      - backend
-    networks:
-      - weather-network-ui-test
-
-networks:
-  weather-network-ui-test:
-    driver: bridge
-
-volumes:
-  postgres_test_data:
+ui_test:
+  build:
+    context: ./ui_test
+    dockerfile: Dockerfile
+  environment:
+    - FRONTEND_URL=http://nginx:80
+    - OW_API_KEY=${OW_API_KEY}
+    - VC_API_KEY=${VC_API_KEY}
+  depends_on:
+    - nginx
+    - backend
+  networks:
+    - weather-network-ui-test
+  # Убираем command из docker-compose, так как он уже в Dockerfile
