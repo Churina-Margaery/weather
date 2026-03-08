@@ -27,9 +27,9 @@ services:
     environment:
       - OW_API_KEY=${OW_API_KEY}
       - VC_API_KEY=${VC_API_KEY}
-      - DB_USER=${DB_USER:-test_user}
-      - DB_PASSWORD=${DB_PASSWORD:-test_password}
-      - DB_NAME=${DB_NAME:-test_db}
+      - DB_USER=weather_user
+      - DB_PASSWORD=weather_password
+      - DB_NAME=weather_db
       - DB_HOST=db
       - DB_PORT=5432
     depends_on:
@@ -40,17 +40,18 @@ services:
 
   db:
     image: postgres:17-alpine
+    container_name: weather_db_test
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USER:-test_user}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-test_password}
-      - POSTGRES_DB=${DB_NAME:-test_db}
+      - POSTGRES_USER=weather_user
+      - POSTGRES_PASSWORD=weather_password
+      - POSTGRES_DB=weather_db
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     networks:
       - weather-network-ui-test
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-test_user} -d ${DB_NAME:-test_db}"]
+      test: ["CMD-SHELL", "pg_isready -U weather_user -d weather_db"]
       interval: 5s
       timeout: 5s
       retries: 5
