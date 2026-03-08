@@ -55,6 +55,30 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    # Добавляем создание таблиц при инициализации
+    command: >
+      bash -c "
+        docker-entrypoint.sh postgres &
+        sleep 10 &&
+        psql -U weather_user -d weather_db <<-'EOF'
+          CREATE TABLE IF NOT EXISTS weather_records (
+            id SERIAL PRIMARY KEY,
+            date DATE NOT NULL UNIQUE,
+            temperature FLOAT,
+            wind_speed FLOAT,
+            visibility FLOAT,
+            pressure INTEGER,
+            humidity INTEGER,
+            city VARCHAR(50)
+          );
+          CREATE INDEX IF NOT EXISTS idx_weather_records_date ON weather_records(date);
+          CREATE INDEX IF NOT EXISTS idx_weather_records_city ON weather_records(city);
+          CREATE TABLE IF NOT EXISTS another_table (
+            -- добавьте другие таблицы, если нужно
+          );
+        EOF
+        wait
+      "
 
   ui_test:
     build:
