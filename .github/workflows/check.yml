@@ -112,6 +112,16 @@ jobs:
           echo -e "\n=== 10 days forecast - HTTP STATUS ==="
           curl -I http://localhost/api/10days?city_name=Saint-Petersburg
 
+      - name: Debug 3/10 days with redirects
+        run: |
+          echo "========== DEBUG 3/10 DAYS WITH REDIRECTS =========="
+          
+          echo "=== 3 days forecast (with redirect) ==="
+          curl -L http://localhost/api/3days?city_name=Saint-Petersburg | jq . || echo "Failed to get 3 days forecast with redirect"
+          
+          echo -e "\n=== 10 days forecast (with redirect) ==="
+          curl -L http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to get 10 days forecast with redirect"
+
       - name: Debug API responses (original)
         run: |
           echo "========== API RESPONSES (ORIGINAL) =========="
