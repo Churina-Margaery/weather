@@ -28,19 +28,11 @@ jobs:
     runs-on: ubuntu-latest
     name: UI-tests with real backend and Report
     needs: unit-test
-    timeout-minutes: 20  # Увеличил таймаут
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup specific Chrome version
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: '119'  # Фиксируем стабильную версию
-          
-      - name: Verify Chrome version
-        run: chrome --version
 
       - name: Create test .env file
         run: |
@@ -61,17 +53,27 @@ jobs:
           timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost)" != "200" ]]; do sleep 2; done'
           echo "Frontend is up!"
           
-          # Дополнительное время для инициализации React и загрузки данных
+          # Дополнительное время для инициализации React
           sleep 15
 
-      - name: Run tests and wait for completion
+      - name: Build test image with fixed Chrome version
         run: |
-          # Создаем контейнер с тестами, передавая переменные окружения для увеличения таймаутов
-          docker compose -f docker-compose.ui-test.yml run \
+          # Собираем образ тестов с фиксированной версией Chrome 119
+          docker build \
+            --build-arg CHROME_VERSION=119.0.6545.0-1 \
+            -t ui_test:fixed \
+            ./ui_test
+
+      - name: Run tests with fixed Chrome
+        run: |
+          # Запускаем тесты в правильной сети
+          docker run \
             -e SELENIDE_TIMEOUT=60000 \
             -e SELENIDE_POLLING_INTERVAL=500 \
-            -e CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --window-size=1920,1080 --disable-gpu --disable-blink-features=AutomationControlled --user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36" \
-            --name test-runner ui_test
+            -e FRONTEND_URL=http://nginx:80 \
+            --name test-runner \
+            --network weather-network-ui-test \
+            ui_test:fixed
           
           # Получаем exit code тестов
           exit_code=$(docker inspect test-runner --format='{{.State.ExitCode}}')
@@ -134,3 +136,4 @@ jobs:
         if: always()
         run: |
           docker compose -f docker-compose.ui-test.yml down -v
+          docker rmi ui_test:fixed || true
