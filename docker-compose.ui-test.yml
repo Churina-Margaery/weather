@@ -49,7 +49,7 @@ services:
     networks:
       - weather-network-ui-test
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/?city_name=Saint-Petersburg"]
       interval: 10s
       timeout: 5s
       retries: 5
