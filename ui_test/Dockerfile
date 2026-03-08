@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk
 
-# Install Chrome and dependencies
+# Install Chrome and dependencies (обновленная версия)
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     fonts-liberation \
-    libasound2 \
+    libasound2t64 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libatspi2.0-0 \
