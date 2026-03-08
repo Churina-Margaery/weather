@@ -34,9 +34,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create test .env file
+      - name: Create .env file
         run: |
-          cat > .env.test << EOF
+          cat > .env << EOF
           OW_API_KEY=${{ secrets.OW_API_KEY }}
           VC_API_KEY=${{ secrets.VC_API_KEY }}
           DB_USER=test_user
@@ -44,16 +44,16 @@ jobs:
           DB_NAME=test_db
           EOF
           
-          echo "========== .env.test contents (keys hidden) =========="
-          cat .env.test | sed 's/\(API_KEY=\)[^:]*/\1***/'
+          echo "========== .env contents (keys hidden) =========="
+          cat .env | sed 's/\(API_KEY=\)[^:]*/\1***/'
+          echo "========== .env file location =========="
+          pwd
+          ls -la .env
 
       - name: Start services with Docker Compose
         run: |
-          # Явно передаём ключи в окружение
-          export OW_API_KEY="${{ secrets.OW_API_KEY }}"
-          export VC_API_KEY="${{ secrets.VC_API_KEY }}"
-          
-          docker compose -f docker-compose.ui-test.yml up -d --build
+          # Используем .env файл напрямую
+          docker compose -f docker-compose.ui-test.yml --env-file .env up -d --build
           
           echo "Waiting for services to start..."
           timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost)" != "200" ]]; do sleep 2; done'
@@ -67,36 +67,38 @@ jobs:
           
           echo "========== CHECKING PORTS =========="
           docker compose -f docker-compose.ui-test.yml port nginx 80 || echo "Nginx port not exposed"
+          
+          echo "========== DOCKER COMPOSE CONFIG =========="
+          docker compose -f docker-compose.ui-test.yml config | grep -A 5 -B 5 "API_KEY" || echo "No API_KEY in config"
+
+      - name: Debug backend environment
+        run: |
+          echo "========== BACKEND ENVIRONMENT VARIABLES =========="
+          docker compose -f docker-compose.ui-test.yml exec backend env | sort | grep -E "OW_API_KEY|VC_API_KEY|DB_" || echo "Failed to get backend env"
 
       - name: Debug API responses
         run: |
           echo "========== API RESPONSES =========="
           
           # Проверяем доступность nginx
-          echo "=== Testing nginx connectivity ==="
-          curl -I http://localhost:8125 || echo "Failed to connect to nginx on port 8125"
+          echo "=== Testing nginx connectivity on port 80 ==="
           curl -I http://localhost || echo "Failed to connect to nginx on port 80"
           
           # Текущая погода
           echo -e "\n=== Current weather for Saint-Petersburg ==="
-          curl -v http://localhost:8125/api/?city_name=Saint-Petersburg 2>&1 || echo "Failed to get current weather"
+          curl -s http://localhost/api/?city_name=Saint-Petersburg | jq . || echo "Failed to get current weather"
           
           # Прогноз на 3 дня
           echo -e "\n=== 3 days forecast for Saint-Petersburg ==="
-          curl -v http://localhost:8125/api/3days?city_name=Saint-Petersburg 2>&1 || echo "Failed to get 3 days forecast"
+          curl -s http://localhost/api/3days?city_name=Saint-Petersburg | jq . || echo "Failed to get 3 days forecast"
           
           # Прогноз на 10 дней
           echo -e "\n=== 10 days forecast for Saint-Petersburg ==="
-          curl -v http://localhost:8125/api/10days?city_name=Saint-Petersburg 2>&1 || echo "Failed to get 10 days forecast"
+          curl -s http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to get 10 days forecast"
           
           # Проверка другого города
           echo -e "\n=== Current weather for Moscow ==="
-          curl -v http://localhost:8125/api/?city_name=Moscow 2>&1 || echo "Failed to get Moscow weather"
-
-      - name: Debug backend environment
-        run: |
-          echo "========== BACKEND ENVIRONMENT VARIABLES =========="
-          docker compose -f docker-compose.ui-test.yml exec backend env | grep -E "OW_API_KEY|VC_API_KEY|DB_" || echo "Failed to get backend env"
+          curl -s http://localhost/api/?city_name=Moscow | jq . || echo "Failed to get Moscow weather"
 
       - name: Debug backend logs before tests
         run: |
@@ -148,7 +150,6 @@ jobs:
           echo "========== COLLECTING ALL LOGS =========="
           docker compose -f docker-compose.ui-test.yml logs > docker-logs.txt
           docker compose -f docker-compose.ui-test.yml exec nginx cat /var/log/nginx/error.log || true
-          docker compose -f docker-compose.ui-test.yml exec backend cat /var/log/backend.log || true
           
       - uses: actions/upload-artifact@v4
         if: failure()
