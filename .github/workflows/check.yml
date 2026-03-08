@@ -89,6 +89,50 @@ jobs:
           # Проверяем, есть ли данные
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "Cannot query weather_records"
 
+      - name: Health check - Database and API endpoints
+        run: |
+          echo "========== HEALTH CHECK =========="
+          
+          # 1. Проверка БД: таблицы и данные
+          echo "=== Database tables ==="
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "❌ Failed to list tables"
+          
+          echo -e "\n=== Weather records count ==="
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "❌ Table weather_records does not exist"
+          
+          # 2. Проверка API endpoints
+          echo -e "\n=== API Endpoints Status ==="
+          
+          # Current weather
+          echo -n "Current weather: "
+          curl -s -o /dev/null -w "%{http_code}" http://localhost/api/?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          
+          # 3 days forecast (следуем редиректу)
+          echo -n "3 days forecast: "
+          curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/3days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          
+          # 10 days forecast
+          echo -n "10 days forecast: "
+          curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/10days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          
+          # 3. Проверка ответов (не только статус)
+          echo -e "\n=== API Responses (first 100 chars) ==="
+          
+          echo "Current weather:"
+          curl -L -s http://localhost/api/?city_name=Saint-Petersburg | head -c 100 | jq . || echo "Not valid JSON"
+          
+          echo -e "\n3 days forecast:"
+          curl -L -s http://localhost/api/3days?city_name=Saint-Petersburg | head -c 100 | cat -A
+          
+          echo -e "\n10 days forecast:"
+          curl -L -s http://localhost/api/10days?city_name=Saint-Petersburg | head -c 100 | cat -A
+          
+          # 4. Проверка логов бэкенда на наличие ошибок
+          echo -e "\n=== Recent backend errors ==="
+          docker compose -f docker-compose.ui-test.yml logs backend --tail 50 | grep -i "error\|exception\|fail" || echo "No recent errors found"
+          
+          echo -e "\n========== HEALTH CHECK COMPLETE =========="
+
       - name: Debug 3/10 days endpoints
         run: |
           echo "========== DEBUG 3/10 DAYS ENDPOINTS =========="
