@@ -66,14 +66,12 @@ jobs:
 
       - name: Run tests with fixed Chrome
         run: |
-          # Запускаем тесты в правильной сети
-          docker run \
+          # Запускаем тесты через docker-compose, чтобы использовать ту же сеть
+          docker compose -f docker-compose.ui-test.yml run \
             -e SELENIDE_TIMEOUT=60000 \
             -e SELENIDE_POLLING_INTERVAL=500 \
-            -e FRONTEND_URL=http://nginx:80 \
             --name test-runner \
-            --network weather-network-ui-test \
-            ui_test:fixed
+            ui_test
           
           # Получаем exit code тестов
           exit_code=$(docker inspect test-runner --format='{{.State.ExitCode}}')
