@@ -19,10 +19,8 @@ RUN npx vite build
 # Production stage
 FROM nginx:alpine
 
-# Copy built files from build stage to nginx
-COPY --from=build /app/dist /app
-
-RUN chmod -R 755 /app
+# Копируем в правильную директорию!
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration if needed
 COPY nginx.conf /etc/nginx/conf.d/default.conf
