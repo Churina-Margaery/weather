@@ -10,11 +10,6 @@ services:
       - backend
     networks:
       - weather-network-ui-test
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   frontend:
     build:
@@ -25,11 +20,6 @@ services:
       - backend
     networks:
       - weather-network-ui-test
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:80"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
@@ -48,11 +38,6 @@ services:
         condition: service_healthy
     networks:
       - weather-network-ui-test
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/?city_name=Saint-Petersburg"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   db:
     image: postgres:17-alpine
@@ -101,10 +86,8 @@ services:
       - CI=true
       - GITHUB_ACTIONS=true
     depends_on:
-      nginx:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
+      - nginx
+      - backend
     networks:
       - weather-network-ui-test
     cap_add:
