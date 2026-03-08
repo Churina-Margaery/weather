@@ -141,6 +141,9 @@ jobs:
         run: |
           echo "========== PAGE HTML DEBUG =========="
           
+          # Создаём директорию для отчётов
+          mkdir -p ./test-reports
+          
           curl -s http://localhost > page.html
           
           echo "=== Looking for key elements in HTML ==="
@@ -155,7 +158,38 @@ jobs:
           grep -o '"temperature":[^,]*' page.html | head -5 || echo "No temperature data found"
           grep -o '"date":"[^"]*"' page.html | head -5 || echo "No date data found"
           
-          cp page.html ./test-reports/ || true
+          cp page.html ./test-reports/ || echo "Failed to copy page.html"
+
+      - name: Debug browser console
+        run: |
+          echo "========== BROWSER CONSOLE LOGS =========="
+          
+          # Получаем заголовки и проверяем CORS
+          echo "=== HTTP Headers ==="
+          curl -I http://localhost
+          
+          # Проверяем, есть ли React в HTML
+          echo -e "\n=== React presence ==="
+          curl -s http://localhost | grep -o "react" | head -5 || echo "⚠️ React not found in HTML"
+          
+          # Проверяем, есть ли ошибки в скриптах
+          echo -e "\n=== Error presence ==="
+          curl -s http://localhost | grep -o "error" | head -5 || echo "✅ No 'error' strings found in HTML"
+          
+          # Проверяем загрузку скриптов
+          echo -e "\n=== Script tags ==="
+          curl -s http://localhost | grep -o '<script src="[^"]*"' | head -10 || echo "No script tags found"
+          
+          # Проверяем, загружается ли main.js
+          echo -e "\n=== Main JS file ==="
+          curl -s http://localhost | grep -o 'main\.[^"]*\.js' | head -5 || echo "No main.js found"
+          
+          # Проверяем, отвечает ли main.js
+          MAIN_JS=$(curl -s http://localhost | grep -o 'main\.[^"]*\.js' | head -1)
+          if [ ! -z "$MAIN_JS" ]; then
+            echo -e "\n=== Checking main.js ==="
+            curl -I http://localhost/$MAIN_JS
+          fi
 
       - name: Build test image with fixed Chrome version
         run: |
@@ -169,7 +203,6 @@ jobs:
         run: |
           echo "========== RUNNING TESTS WITH SCREENSHOTS =========="
           
-          # Модифицируем тесты для сохранения скриншотов при падении
           docker compose -f docker-compose.ui-test.yml run \
             -e SELENIDE_TIMEOUT=90000 \
             -e SELENIDE_POLLING_INTERVAL=1000 \
@@ -177,22 +210,16 @@ jobs:
             --name test-runner \
             ui_test
           
-          # Сохраняем exit code
           exit_code=$?
           echo "Test exit code: $exit_code"
           
-          # Копируем скриншоты из контейнера если они есть
           echo "========== COLLECTING SCREENSHOTS =========="
           mkdir -p ./screenshots
           docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
           docker cp test-runner:/app/screenshots/. ./screenshots/ || true
-          
-          # Копируем Allure результаты
           docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
           
-          # Удаляем контейнер
           docker rm test-runner
-          
           exit $exit_code
 
       - name: Upload screenshots
