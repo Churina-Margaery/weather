@@ -20,51 +20,25 @@ public void setupConf() {
                      System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:8125"));
     Configuration.baseUrl = baseUrl;
     
-    Configuration.timeout = 15000;
+    Configuration.timeout = 30000;
     Configuration.browserSize = "1366x768";
-    
-    boolean isCI = System.getenv("CI") != null || System.getenv("GITHUB_ACTIONS") != null;
     
     ChromeOptions options = new ChromeOptions();
     
-    // Базовые аргументы для всех окружений
+    // Минимальный набор аргументов для headless режима
     options.addArguments(
-        "--disable-dev-shm-usage",
+        "--headless=new",
         "--no-sandbox",
+        "--disable-dev-shm-usage",
         "--disable-gpu",
         "--window-size=1366,768",
-        "--disable-setuid-sandbox",
         "--remote-allow-origins=*"
     );
     
-    if (isCI) {
-        String userDataDir = "/tmp/chrome-profile-" + System.currentTimeMillis();
-        options.addArguments(
-            "--user-data-dir=" + userDataDir,
-            "--headless=new",
-            "--disable-dev-shm-usage",
-            "--disable-gpu",
-            "--no-sandbox"
-        );
-        Configuration.headless = true;
-    } else {
-        String userDataDir = System.getProperty("java.io.tmpdir") + "chrome-profile-" + System.currentTimeMillis();
-        options.addArguments(
-            "--user-data-dir=" + userDataDir
-        );
-        Configuration.headless = false;
-    }
-    
-    Map<String, Object> prefs = new HashMap<>();
-    prefs.put("credentials_enable_service", false);
-    prefs.put("profile.default_content_setting_values.automatic_downloads", 1);
-    prefs.put("safebrowsing.enabled", true);
-    options.setExperimentalOption("prefs", prefs);
-    
-    options.setExperimentalOption("excludeSwitches", 
-        new String[]{"enable-automation"});
+    options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
     
     Configuration.browserCapabilities = options;
+    Configuration.headless = true;
 
     Selenide.open("/");
 }

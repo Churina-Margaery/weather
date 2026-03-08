@@ -57,19 +57,22 @@ services:
       timeout: 5s
       retries: 5
 
-  ui_test:
-    build:
-      context: ./ui_test
-      dockerfile: Dockerfile
-    environment:
-      - FRONTEND_URL=http://nginx:80
-      - OW_API_KEY=${OW_API_KEY}
-      - VC_API_KEY=${VC_API_KEY}
-    depends_on:
-      - nginx
-      - backend
-    networks:
-      - weather-network-ui-test
+ui_test:
+  build:
+    context: ./ui_test
+    dockerfile: Dockerfile
+  environment:
+    - FRONTEND_URL=http://nginx:80
+  depends_on:
+    - nginx
+    - backend
+  networks:
+    - weather-network-ui-test
+  # Добавляем возможности для запуска Chrome
+  cap_add:
+    - SYS_ADMIN
+  security_opt:
+    - seccomp:unconfined
 
 networks:
   weather-network-ui-test:
