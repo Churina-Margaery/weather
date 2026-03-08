@@ -67,7 +67,7 @@ jobs:
         if: failure()
         run: |
           docker-compose -f docker-compose.ui-test.yml logs > docker-logs.txt
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4  # ИСПРАВЛЕНО: v3 -> v4
         if: failure()
         with:
           name: docker-logs
