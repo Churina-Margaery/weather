@@ -2,18 +2,13 @@ FROM selenium/standalone-chrome:119.0-chromedriver-119.0
 
 USER root
 
-# Установка Java 17
-RUN apt-get update && apt-get install -y \
-    openjdk-17-jdk \
-    maven \
-    curl \
-    unzip \
+# Install Maven
+RUN apt-get update && apt-get install -y maven \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Установка JAVA_HOME
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
+# Создаем симлинк для ChromeDriver в ожидаемое место
+RUN ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
 
 USER seluser
 WORKDIR /app
@@ -24,9 +19,9 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Verify installations
-RUN echo "Java version:" && java -version
 RUN echo "Chrome version:" && google-chrome --version
 RUN echo "ChromeDriver version:" && chromedriver --version
+RUN echo "ChromeDriver location:" && which chromedriver
 
 # Запуск тестов с таймаутом 60 секунд
 CMD mvn test \
