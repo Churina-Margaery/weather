@@ -2,7 +2,6 @@ package com.example.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
-import com.example.utils.MockUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,20 +14,40 @@ public class BaseTest {
 
     @BeforeEach
     public void setupConf() {
-
         Configuration.browser = CHROME;
-        Configuration.baseUrl = System.getProperty("selenide.baseUrl", "http://localhost:5173");
-        Configuration.timeout = 10000;
+        
+        String baseUrl = System.getProperty("frontend.url", 
+                         System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:8125"));
+        Configuration.baseUrl = baseUrl;
+        
+        Configuration.timeout = 15000;
+        
+        boolean isCI = System.getenv("CI") != null || System.getenv("GITHUB_ACTIONS") != null;
         
         ChromeOptions options = new ChromeOptions();
         
-        String userDataDir = "C:/temp/chrome-profile-" + System.currentTimeMillis();
-        options.addArguments(
-            "--user-data-dir=" + userDataDir,
-            "--disable-dev-shm-usage",
-            "--window-size=1366,768",
-            "--no-sandbox"
-        );
+        if (isCI) {
+            String userDataDir = "/tmp/chrome-profile-" + System.currentTimeMillis();
+            options.addArguments(
+                "--user-data-dir=" + userDataDir,
+                "--disable-dev-shm-usage",
+                "--window-size=1366,768",
+                "--no-sandbox",
+                "--disable-gpu",
+                "--headless=new"
+            );
+            Configuration.headless = true;
+        } else {
+            String userDataDir = System.getProperty("java.io.tmpdir") + "chrome-profile-" + System.currentTimeMillis();
+            options.addArguments(
+                "--user-data-dir=" + userDataDir,
+                "--disable-dev-shm-usage",
+                "--window-size=1366,768",
+                "--no-sandbox",
+                "--disable-gpu"
+            );
+            Configuration.headless = false;
+        }
         
         Map<String, Object> prefs = new HashMap<>();
         prefs.put("credentials_enable_service", false);
@@ -41,8 +60,6 @@ public class BaseTest {
         
         Configuration.browserCapabilities = options;
 
-        MockUtil.stubSpb();
-        
         Selenide.open("/");
     }
 

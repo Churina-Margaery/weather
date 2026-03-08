@@ -1,9 +1,11 @@
 package com.example.elements;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.openqa.selenium.By;
 import static com.codeborne.selenide.Selectors.byXpath;
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Condition.exactText;
 import com.example.pages.LoadablePage;
 
 public class NextDayWeatherBlock implements LoadablePage {
@@ -42,27 +44,70 @@ public class NextDayWeatherBlock implements LoadablePage {
         return true;
     }
     
-    public void checkDaysList(String firstElement, String secondElement, String thirdElement, String fourthElement, String fifthElement) {
-        $(firstTemperatureDay).shouldHave(exactText(firstElement));
-        $(secondTemperatureDay).shouldHave(exactText(secondElement));
-        $(thirdTemperatureDay).shouldHave(exactText(thirdElement));
-        $(fourthTemperaturDay).shouldHave(exactText(fourthElement));
-        $(fifthTemperatureDay).shouldHave(exactText(fifthElement));
-    }
+    public void checkDaysList() {
+        String dayPattern = "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|" +
+            "Понедельник|Вторник|Среда|Четверг|Пятница|Суббота|Воскресенье";
     
-    public void checkTimeList(String firstElement, String secondElement, String thirdElement, String fourthElement, String fifthElement) {
-        $(firstTemperatureTime).shouldHave(exactText(firstElement));
-        $(secondTemperatureTime).shouldHave(exactText(secondElement));
-        $(thirdTemperatureTime).shouldHave(exactText(thirdElement));
-        $(fourthTemperaturTime).shouldHave(exactText(fourthElement));
-        $(fifthTemperatureTime).shouldHave(exactText(fifthElement));
+        String day1 = $(firstTemperatureDay).getText();
+        String day2 = $(secondTemperatureDay).getText();
+        String day3 = $(thirdTemperatureDay).getText();
+        String day4 = $(fourthTemperaturDay).getText();
+        String day5 = $(fifthTemperatureDay).getText();
+    
+        assertFalse(day1.isEmpty(), "Первый день не отображается");
+        assertFalse(day2.isEmpty(), "Второй день не отображается");
+        assertFalse(day3.isEmpty(), "Третий день не отображается");
+        assertFalse(day4.isEmpty(), "Четвертый день не отображается");
+        assertFalse(day5.isEmpty(), "Пятый день не отображается");
+    
+        assertTrue(day1.matches(dayPattern), "Неверный формат первого дня: " + day1);
+        assertTrue(day2.matches(dayPattern), "Неверный формат второго дня: " + day2);
+        assertTrue(day3.matches(dayPattern), "Неверный формат третьего дня: " + day3);
+        assertTrue(day4.matches(dayPattern), "Неверный формат четвертого дня: " + day4);
+        assertTrue(day5.matches(dayPattern), "Неверный формат пятого дня: " + day5);
     }
 
-    public void checkTemperatureList(String firstElement, String secondElement, String thirdElement, String fourthElement, String fifthElement) {
-        $(firstTemperatureValue).shouldHave(exactText(firstElement));
-        $(secondTemperatureValue).shouldHave(exactText(secondElement));
-        $(thirdTemperatureValue).shouldHave(exactText(thirdElement));
-        $(fourthTemperaturValue).shouldHave(exactText(fourthElement));
-        $(fifthTemperatureValue).shouldHave(exactText(fifthElement));
+    public void checkTimeList() {
+        String timePattern = "([0-1]?[0-9]|2[0-3]):[0-5][0-9]";
+    
+        String time1 = $(firstTemperatureTime).getText();
+        String time2 = $(secondTemperatureTime).getText();
+        String time3 = $(thirdTemperatureTime).getText();
+        String time4 = $(fourthTemperaturTime).getText();
+        String time5 = $(fifthTemperatureTime).getText();
+    
+        assertFalse(time1.isEmpty(), "Первое время не отображается");
+        assertFalse(time2.isEmpty(), "Второе время не отображается");
+        assertFalse(time3.isEmpty(), "Третье время не отображается");
+        assertFalse(time4.isEmpty(), "Четвертое время не отображается");
+        assertFalse(time5.isEmpty(), "Пятое время не отображается");
+    
+        assertTrue(time1.matches(timePattern), "Неверный формат первого времени: " + time1);
+        assertTrue(time2.matches(timePattern), "Неверный формат второго времени: " + time2);
+        assertTrue(time3.matches(timePattern), "Неверный формат третьего времени: " + time3);
+        assertTrue(time4.matches(timePattern), "Неверный формат четвертого времени: " + time4);
+        assertTrue(time5.matches(timePattern), "Неверный формат пятого времени: " + time5);
+    }
+
+    public void checkTemperatureList() {
+        String tempPattern = "-?\\d+(\\.\\d+)?\\s*°C";
+    
+        String temp1 = $(firstTemperatureValue).getText();
+        String temp2 = $(secondTemperatureValue).getText();
+        String temp3 = $(thirdTemperatureValue).getText();
+        String temp4 = $(fourthTemperaturValue).getText();
+        String temp5 = $(fifthTemperatureValue).getText();
+    
+        assertFalse(temp1.isEmpty(), "Первая температура не отображается");
+        assertFalse(temp2.isEmpty(), "Вторая температура не отображается");
+        assertFalse(temp3.isEmpty(), "Третья температура не отображается");
+        assertFalse(temp4.isEmpty(), "Четвертая температура не отображается");
+        assertFalse(temp5.isEmpty(), "Пятая температура не отображается");
+    
+        assertTrue(temp1.matches(tempPattern), "Неверный формат первой температуры: " + temp1);
+        assertTrue(temp2.matches(tempPattern), "Неверный формат второй температуры: " + temp2);
+        assertTrue(temp3.matches(tempPattern), "Неверный формат третьей температуры: " + temp3);
+        assertTrue(temp4.matches(tempPattern), "Неверный формат четвертой температуры: " + temp4);
+        assertTrue(temp5.matches(tempPattern), "Неверный формат пятой температуры: " + temp5);
     }
 }

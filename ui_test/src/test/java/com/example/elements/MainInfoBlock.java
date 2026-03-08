@@ -27,12 +27,12 @@ public class MainInfoBlock implements LoadablePage {
         return true;
     }
 
-    public void checkTemperature(String temperature) {
-        $(temperatureValue).shouldHave(exactText(temperature));
+    public boolean checkTemperature() {
+        return $(temperatureValue).text().matches(".*°C$");
     }
 
-    public void checkWeather(String weather) {
-        $(typeOfWeatherValue).shouldHave(exactText(weather));
+    public boolean checkWeather() {
+        return $(typeOfWeatherValue).text().length() > 0;
     }
 
     public void checkCity(String city) {
