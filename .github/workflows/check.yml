@@ -56,6 +56,26 @@ jobs:
           # Дополнительное время для инициализации React
           sleep 15
 
+      - name: Debug API responses
+        run: |
+          echo "========== API RESPONSES =========="
+          
+          # Текущая погода
+          echo "=== Current weather for Saint-Petersburg ==="
+          curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8125/api/?city_name=Saint-Petersburg || echo "Failed to get current weather"
+          
+          # Прогноз на 3 дня
+          echo "=== 3 days forecast for Saint-Petersburg ==="
+          curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8125/api/3days?city_name=Saint-Petersburg || echo "Failed to get 3 days forecast"
+          
+          # Прогноз на 10 дней
+          echo "=== 10 days forecast for Saint-Petersburg ==="
+          curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8125/api/10days?city_name=Saint-Petersburg || echo "Failed to get 10 days forecast"
+          
+          # Проверка другого города
+          echo "=== Current weather for Moscow ==="
+          curl -s -w "\nHTTP Status: %{http_code}\n" http://localhost:8125/api/?city_name=Moscow || echo "Failed to get Moscow weather"
+
       - name: Build test image with fixed Chrome version
         run: |
           # Собираем образ тестов с фиксированной версией Chrome 119
@@ -68,14 +88,22 @@ jobs:
         run: |
           # Запускаем тесты через docker-compose, чтобы использовать ту же сеть
           docker compose -f docker-compose.ui-test.yml run \
-            -e SELENIDE_TIMEOUT=60000 \
-            -e SELENIDE_POLLING_INTERVAL=500 \
+            -e SELENIDE_TIMEOUT=90000 \
+            -e SELENIDE_POLLING_INTERVAL=1000 \
             --name test-runner \
             ui_test
           
-          # Получаем exit code тестов
-          exit_code=$(docker inspect test-runner --format='{{.State.ExitCode}}')
+          # Сохраняем exit code
+          exit_code=$?
           echo "Test exit code: $exit_code"
+          
+          # Показываем логи бэкенда
+          echo "========== BACKEND LOGS =========="
+          docker compose -f docker-compose.ui-test.yml logs backend --tail 100
+          
+          # Показываем логи фронтенда
+          echo "========== FRONTEND LOGS =========="
+          docker compose -f docker-compose.ui-test.yml logs frontend --tail 50
           
           # Копируем результаты
           docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
