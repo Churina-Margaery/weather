@@ -18,22 +18,18 @@ RUN apt-get update && apt-get install -y \
 # Install Maven
 RUN apt-get update && apt-get install -y maven
 
-# Copy only pom.xml first to cache dependencies
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy rest of the project files
 COPY . .
-
-# Compile tests during build (not just compile but also test-compile)
 RUN mvn clean package -DskipTests
 
-# Run tests using shell form to properly expand environment variables
 CMD mvn test \
     -Dselenide.headless=true \
     -Dselenide.browser=chrome \
     -Dselenide.timeout=15000 \
+    -Dfrontend.url=${FRONTEND_URL} \
     -Dselenide.baseUrl=${FRONTEND_URL} \
     -Dselenide.pageLoadStrategy=normal \
     -Dchromeoptions.args="--disable-dev-shm-usage,--no-sandbox,--disable-gpu,--window-size=1366,768" \
