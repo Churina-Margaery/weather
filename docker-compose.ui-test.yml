@@ -15,9 +15,11 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_WEATHER_SERVER: http://backend:5000
+        # Исправлено: используем nginx как прокси
+        VITE_WEATHER_SERVER: http://nginx:80/api
     depends_on:
       - backend
+      - nginx
     networks:
       - weather-network-ui-test
 
@@ -32,7 +34,7 @@ services:
       - DB_NAME=weather_db
       - DB_HOST=db
       - DB_PORT=5432
-      - DISABLE_VISUAL_CROSSING=true  # Добавлено!
+      - DISABLE_VISUAL_CROSSING=true
     depends_on:
       db:
         condition: service_healthy
@@ -56,7 +58,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    # Добавляем создание таблиц при инициализации
     command: >
       bash -c "
         docker-entrypoint.sh postgres &
