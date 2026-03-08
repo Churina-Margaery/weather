@@ -2,13 +2,24 @@ FROM selenium/standalone-chrome:119.0-chromedriver-119.0
 
 USER root
 
-# Install Maven
-RUN apt-get update && apt-get install -y maven \
+# Install Java 17
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
+    maven \
+    curl \
+    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Создаем симлинк для ChromeDriver в ожидаемое место
+# Set Java 17 as default
+RUN update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+
+# Create symlink for ChromeDriver
 RUN ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
+
+# Set JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 USER seluser
 WORKDIR /app
@@ -19,9 +30,9 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Verify installations
+RUN echo "Java version:" && java -version
 RUN echo "Chrome version:" && google-chrome --version
 RUN echo "ChromeDriver version:" && chromedriver --version
-RUN echo "ChromeDriver location:" && which chromedriver
 
 # Запуск тестов с таймаутом 60 секунд
 CMD mvn test \
@@ -29,6 +40,8 @@ CMD mvn test \
     -Dselenide.browser=chrome \
     -Dselenide.timeout=60000 \
     -Dselenide.polling-interval=500 \
+    -Dmaven.compiler.source=17 \
+    -Dmaven.compiler.target=17 \
     -Dfrontend.url=${FRONTEND_URL} \
     -Dselenide.baseUrl=${FRONTEND_URL} \
     -Dallure.results.directory=target/allure-results
