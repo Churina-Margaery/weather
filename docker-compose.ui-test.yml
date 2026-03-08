@@ -73,9 +73,6 @@ services:
           );
           CREATE INDEX IF NOT EXISTS idx_weather_records_date ON weather_records(date);
           CREATE INDEX IF NOT EXISTS idx_weather_records_city ON weather_records(city);
-          CREATE TABLE IF NOT EXISTS another_table (
-            -- добавьте другие таблицы, если нужно
-          );
         EOF
         wait
       "
