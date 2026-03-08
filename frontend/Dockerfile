@@ -19,14 +19,13 @@ RUN npx vite build
 # Production stage
 FROM nginx:alpine
 
-# Копируем собранные файлы в правильную директорию nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built files from build stage to nginx
+COPY --from=build /app/dist /app
 
-# Копируем конфигурацию nginx
+RUN chmod -R 755 /app
+
+# Copy nginx configuration if needed
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Даем правильные права
-RUN chmod -R 755 /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
