@@ -52,7 +52,6 @@ jobs:
 
       - name: Start services with Docker Compose
         run: |
-          # Используем .env файл напрямую
           docker compose -f docker-compose.ui-test.yml --env-file .env up -d --build
           
           echo "Waiting for services to start..."
@@ -80,54 +79,31 @@ jobs:
         run: |
           echo "========== VERIFYING DATABASE TABLES =========="
           
-          # Проверяем, что таблицы создались
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "Failed to list tables"
-          
-          # Проверяем структуру таблицы weather_records
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\d weather_records" || echo "Table weather_records does not exist"
-          
-          # Проверяем, есть ли данные
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "Cannot query weather_records"
 
       - name: Health check - Database and API endpoints
         run: |
           echo "========== HEALTH CHECK =========="
           
-          # 1. Проверка БД: таблицы и данные
           echo "=== Database tables ==="
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "❌ Failed to list tables"
           
           echo -e "\n=== Weather records count ==="
           docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "❌ Table weather_records does not exist"
           
-          # 2. Проверка API endpoints
           echo -e "\n=== API Endpoints Status ==="
           
-          # Current weather
           echo -n "Current weather: "
           curl -s -o /dev/null -w "%{http_code}" http://localhost/api/?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
           
-          # 3 days forecast (следуем редиректу)
           echo -n "3 days forecast: "
           curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/3days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
           
-          # 10 days forecast
           echo -n "10 days forecast: "
           curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/10days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
           
-          # 3. Проверка ответов (не только статус)
-          echo -e "\n=== API Responses (first 100 chars) ==="
-          
-          echo "Current weather:"
-          curl -L -s http://localhost/api/?city_name=Saint-Petersburg | head -c 100 | jq . || echo "Not valid JSON"
-          
-          echo -e "\n3 days forecast:"
-          curl -L -s http://localhost/api/3days?city_name=Saint-Petersburg | head -c 100 | cat -A
-          
-          echo -e "\n10 days forecast:"
-          curl -L -s http://localhost/api/10days?city_name=Saint-Petersburg | head -c 100 | cat -A
-          
-          # 4. Проверка логов бэкенда на наличие ошибок
           echo -e "\n=== Recent backend errors ==="
           docker compose -f docker-compose.ui-test.yml logs backend --tail 50 | grep -i "error\|exception\|fail" || echo "No recent errors found"
           
@@ -137,24 +113,14 @@ jobs:
         run: |
           echo "========== DEBUG 3/10 DAYS ENDPOINTS =========="
           
-          # Проверяем, что бэкенд отвечает
           echo "=== Backend health check (current weather) ==="
           curl -I http://localhost/api/?city_name=Saint-Petersburg
           
-          # Смотрим raw ответ для 3 days (без jq)
           echo -e "\n=== 3 days forecast - RAW RESPONSE (with headers) ==="
           curl -v http://localhost/api/3days?city_name=Saint-Petersburg 2>&1
           
-          # Смотрим raw ответ для 10 days (без jq)
           echo -e "\n=== 10 days forecast - RAW RESPONSE (with headers) ==="
           curl -v http://localhost/api/10days?city_name=Saint-Petersburg 2>&1
-          
-          # Проверяем код ответа отдельно
-          echo -e "\n=== 3 days forecast - HTTP STATUS ==="
-          curl -I http://localhost/api/3days?city_name=Saint-Petersburg
-          
-          echo -e "\n=== 10 days forecast - HTTP STATUS ==="
-          curl -I http://localhost/api/10days?city_name=Saint-Petersburg
 
       - name: Debug 3/10 days with redirects
         run: |
@@ -166,30 +132,30 @@ jobs:
           echo -e "\n=== 10 days forecast (with redirect) ==="
           curl -L http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to get 10 days forecast with redirect"
 
-      - name: Debug API responses (original)
-        run: |
-          echo "========== API RESPONSES (ORIGINAL) =========="
-          
-          # Текущая погода
-          echo "=== Current weather for Saint-Petersburg ==="
-          curl -s http://localhost/api/?city_name=Saint-Petersburg | jq . || echo "Failed to get current weather"
-          
-          # Прогноз на 3 дня (пробуем с jq, но он упадет)
-          echo -e "\n=== 3 days forecast (with jq - will fail) ==="
-          curl -s http://localhost/api/3days?city_name=Saint-Petersburg | jq . || echo "Failed to parse 3 days forecast with jq"
-          
-          # Прогноз на 10 дней
-          echo -e "\n=== 10 days forecast (with jq - will fail) ==="
-          curl -s http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to parse 10 days forecast with jq"
-          
-          # Проверка другого города
-          echo -e "\n=== Current weather for Moscow ==="
-          curl -s http://localhost/api/?city_name=Moscow | jq . || echo "Failed to get Moscow weather"
-
       - name: Debug backend logs before tests
         run: |
           echo "========== BACKEND LOGS BEFORE TESTS =========="
           docker compose -f docker-compose.ui-test.yml logs backend --tail 100
+
+      - name: Debug page HTML
+        run: |
+          echo "========== PAGE HTML DEBUG =========="
+          
+          curl -s http://localhost > page.html
+          
+          echo "=== Looking for key elements in HTML ==="
+          grep -A 2 -B 2 "header__city-search" page.html || echo "❌ Search input not found in HTML"
+          grep -A 2 -B 2 "header__btn" page.html || echo "❌ Theme button not found in HTML"
+          grep -A 2 -B 2 "overview__item-value" page.html || echo "❌ Temperature element not found in HTML"
+          grep -A 2 -B 2 "forecast-container" page.html || echo "❌ Forecast container not found in HTML"
+          grep -A 2 -B 2 'name="period3"' page.html || echo "❌ Period3 select not found in HTML"
+          grep -A 2 -B 2 'name="period10"' page.html || echo "❌ Period10 select not found in HTML"
+          
+          echo -e "\n=== Checking for data in HTML ==="
+          grep -o '"temperature":[^,]*' page.html | head -5 || echo "No temperature data found"
+          grep -o '"date":"[^"]*"' page.html | head -5 || echo "No date data found"
+          
+          cp page.html ./test-reports/ || true
 
       - name: Build test image with fixed Chrome version
         run: |
@@ -199,14 +165,15 @@ jobs:
             -t ui_test:fixed \
             ./ui_test
 
-      - name: Run tests with fixed Chrome
+      - name: Run tests with fixed Chrome and screenshots
         run: |
-          echo "========== RUNNING TESTS =========="
+          echo "========== RUNNING TESTS WITH SCREENSHOTS =========="
           
-          # Запускаем тесты через docker-compose
+          # Модифицируем тесты для сохранения скриншотов при падении
           docker compose -f docker-compose.ui-test.yml run \
             -e SELENIDE_TIMEOUT=90000 \
             -e SELENIDE_POLLING_INTERVAL=1000 \
+            -e SCREENSHOTS_ON_FAILURE=true \
             --name test-runner \
             ui_test
           
@@ -214,21 +181,43 @@ jobs:
           exit_code=$?
           echo "Test exit code: $exit_code"
           
-          # Показываем логи после тестов
-          echo "========== BACKEND LOGS AFTER TESTS =========="
-          docker compose -f docker-compose.ui-test.yml logs backend --tail 100
-          
-          echo "========== FRONTEND LOGS AFTER TESTS =========="
-          docker compose -f docker-compose.ui-test.yml logs frontend --tail 50
-          
-          # Копируем результаты
-          docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
+          # Копируем скриншоты из контейнера если они есть
+          echo "========== COLLECTING SCREENSHOTS =========="
+          mkdir -p ./screenshots
           docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
+          docker cp test-runner:/app/screenshots/. ./screenshots/ || true
+          
+          # Копируем Allure результаты
+          docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
           
           # Удаляем контейнер
           docker rm test-runner
           
           exit $exit_code
+
+      - name: Upload screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: ./screenshots/
+          retention-days: 7
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: ./test-reports/
+          retention-days: 7
+
+      - name: Upload page HTML
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-html
+          path: page.html
+          retention-days: 7
 
       - name: Collect logs on failure
         if: failure()
@@ -243,14 +232,6 @@ jobs:
         with:
           name: docker-logs
           path: docker-logs.txt
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: ./test-reports/
-          retention-days: 7
 
       - name: Copy History
         uses: actions/checkout@v4
