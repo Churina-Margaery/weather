@@ -19,7 +19,7 @@ RUN npx vite build
 # Production stage
 FROM nginx:alpine
 
-# Копируем в правильную директорию!
+# Копируем собранные файлы в правильную директорию nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration if needed
