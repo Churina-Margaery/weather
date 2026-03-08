@@ -32,6 +32,7 @@ services:
       - DB_NAME=weather_db
       - DB_HOST=db
       - DB_PORT=5432
+      - DISABLE_VISUAL_CROSSING=true  # Добавлено!
     depends_on:
       db:
         condition: service_healthy
