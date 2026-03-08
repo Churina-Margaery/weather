@@ -5,6 +5,8 @@ import com.codeborne.selenide.Selenide;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
+import java.util.HashMap;
+import java.util.Map;
 import static com.codeborne.selenide.Browsers.CHROME;
 import static com.codeborne.selenide.WebDriverRunner.clearBrowserCache;
 
@@ -36,14 +38,29 @@ public class BaseTest {
         );
         
         if (isCI) {
-            // Для CI - headless режим и путь к chromedriver
+            // Для CI - обязательный headless режим и путь к chromedriver
             System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
             options.addArguments("--headless=new");
+            options.addArguments("--disable-setuid-sandbox");
+            options.addArguments("--disable-extensions");
             Configuration.headless = true;
+            
+            System.out.println("🔧 Running in CI mode with headless Chrome");
         } else {
             // Для локального запуска - обычный режим с браузером
             Configuration.headless = false;
+            System.out.println("🔧 Running locally with visible Chrome");
         }
+        
+        // Добавляем prefs для избежания проблем
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("credentials_enable_service", false);
+        prefs.put("profile.default_content_setting_values.automatic_downloads", 1);
+        prefs.put("safebrowsing.enabled", true);
+        options.setExperimentalOption("prefs", prefs);
+        
+        options.setExperimentalOption("excludeSwitches", 
+            new String[]{"enable-automation", "load-extension"});
         
         Configuration.browserCapabilities = options;
 

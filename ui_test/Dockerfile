@@ -1,10 +1,11 @@
 FROM eclipse-temurin:17-jdk
 
-# Устанавливаем только самое необходимое для Chrome
+# Install Chrome (latest stable)
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     ca-certificates \
+    curl \
     unzip \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
@@ -13,14 +14,19 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем ChromeDriver
-RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
-    && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
-    && rm /tmp/chromedriver.zip \
-    && chmod +x /usr/local/bin/chromedriver
+# Install matching ChromeDriver (автоматическое определение версии)
+RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+') \
+    && CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d. -f1) \
+    && echo "Chrome version: $CHROME_VERSION" \
+    && echo "Chrome major version: $CHROME_MAJOR_VERSION" \
+    && wget -O /tmp/chromedriver.zip "https://storage.googleapis.com/chrome-for-testing-public/$CHROME_VERSION/linux64/chromedriver-linux64.zip" \
+    && unzip /tmp/chromedriver.zip -d /tmp/ \
+    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
+    && rm -rf /tmp/chromedriver* \
+    && chmod +x /usr/local/bin/chromedriver \
+    && chromedriver --version
 
-# Устанавливаем Maven
+# Install Maven
 RUN apt-get update && apt-get install -y maven
 
 WORKDIR /app
@@ -30,8 +36,9 @@ RUN mvn dependency:go-offline
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Проверяем, что Chrome установлен
-RUN google-chrome --version
+# Verify installations
+RUN echo "Chrome version:" && google-chrome --version
+RUN echo "ChromeDriver version:" && chromedriver --version
 
 CMD mvn test \
     -Dselenide.headless=true \
