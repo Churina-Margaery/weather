@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { MainCard } from './main-card';
 import { getTemp, getCity, getDate, getIcon, getDescription } from '../../store/main-process/selectors';
-// В начале тестового файла (перед импортами)
+
 declare const vi: typeof import('vitest').vi;
 vi.mock('../../store/main-process/selectors', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../store/main-process/selectors')>();
@@ -93,5 +93,60 @@ describe('MainCard component', () => {
     expect(screen.getByText('Moscow')).toBeInTheDocument();
     expect(screen.getByText('December 31')).toBeInTheDocument();
     expect(screen.getByText('Bad')).toBeInTheDocument();
+  });
+
+  it('should render zero temperature correctly (boundary: 0°C)', () => {
+    mockGetTemp.mockReturnValue(0);
+    mockGetCity.mockReturnValue('Paris');
+    mockGetDate.mockReturnValue('2024-02-02T00:00:00');
+    mockGetIcon.mockReturnValue('./img/sun.svg');
+    mockGetDescription.mockReturnValue('Ok');
+
+    const mockStore = createMockStore({
+      main: {
+        temp: 0,
+        city: 'Paris',
+        date: '2024-02-02T00:00:00',
+      }
+    });
+
+    render(
+      <Provider store={mockStore}>
+        <MainCard />
+      </Provider>
+    );
+
+    expect(screen.getByText('0°C')).toBeInTheDocument();
+    expect(screen.getByText('Paris')).toBeInTheDocument();
+    expect(screen.getByText('February 2')).toBeInTheDocument();
+    expect(screen.getByText('Ok')).toBeInTheDocument();
+  });
+
+  it('should call selectors to get data (interaction/side-effect)', () => {
+    mockGetTemp.mockReturnValue(10);
+    mockGetCity.mockReturnValue('Rome');
+    mockGetDate.mockReturnValue('2024-03-03T00:00:00');
+    mockGetIcon.mockReturnValue('./img/sun.svg');
+    mockGetDescription.mockReturnValue('Warm');
+
+    const mockStore = createMockStore({
+      main: {
+        temp: 10,
+        city: 'Rome',
+        date: '2024-03-03T00:00:00',
+      }
+    });
+
+    render(
+      <Provider store={mockStore}>
+        <MainCard />
+      </Provider>
+    );
+
+    expect(mockGetTemp).toHaveBeenCalled();
+    expect(mockGetCity).toHaveBeenCalled();
+    expect(mockGetDate).toHaveBeenCalled();
+    expect(mockGetIcon).toHaveBeenCalled();
+    expect(mockGetDescription).toHaveBeenCalled();
   });
 });
