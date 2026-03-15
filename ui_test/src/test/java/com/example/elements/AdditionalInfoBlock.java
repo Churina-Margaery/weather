@@ -1,9 +1,11 @@
 package com.example.elements;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.openqa.selenium.By;
 import static com.codeborne.selenide.Selectors.byXpath;
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Condition.exactText;
 import com.example.pages.LoadablePage;
 
 public class AdditionalInfoBlock implements LoadablePage {
@@ -35,33 +37,63 @@ public class AdditionalInfoBlock implements LoadablePage {
         return true;
     }
 
-    public void checkWind(String wind) {
+    public void checkWind() {
         $(windValue).scrollTo().isDisplayed();
-        $(windValue).shouldHave(exactText(wind));
+    
+        String actualWind = $(windValue).getText();
+    
+        assertFalse(actualWind.isEmpty(), "Ветер не отображается");
+        assertTrue(actualWind.matches("\\d+(\\.\\d+)?\\s*km/h"), 
+            "Неверный формат ветра: " + actualWind);
     }
 
-    public void checkVisibility(String visibility) {
+    public void checkVisibility() {
         $(visibilityValue).scrollTo().isDisplayed();
-        $(visibilityValue).shouldHave(exactText(visibility));
+    
+        String actualVisibility = $(visibilityValue).getText();
+    
+        assertFalse(actualVisibility.isEmpty(), "Видимость не отображается");
+        assertTrue(actualVisibility.matches("\\d+(\\.\\d+)?\\s*km"), 
+            "Неверный формат видимости: " + actualVisibility);
     }
 
-    public void checlPressure(String pressure) {
+    public void checkPressure() {
         $(pressureValue).scrollTo().isDisplayed();
-        $(pressureValue).shouldHave(exactText(pressure));
+    
+        String actualPressure = $(pressureValue).getText();
+    
+        assertFalse(actualPressure.isEmpty(), "Давление не отображается");
+        assertTrue(actualPressure.matches("\\d+(\\.\\d+)?\\s*hPa"), 
+            "Неверный формат давления: " + actualPressure);
     }
 
-    public void checkHumidity(String humidity) {
+    public void checkHumidity() {
         $(humidityValue).scrollTo().isDisplayed();
-        $(humidityValue).shouldHave(exactText(humidity));
+    
+        String actualHumidity = $(humidityValue).getText();
+    
+        assertFalse(actualHumidity.isEmpty(), "Влажность не отображается");
+        assertTrue(actualHumidity.matches("\\d+(\\.\\d+)?\\s*%"), 
+            "Неверный формат влажности: " + actualHumidity);
     }
 
-    public void checkSunrise(String sunrise) {
+    public void checkSunrise() {
         $(sunriseValue).scrollTo().isDisplayed();
-        $(sunriseValue).shouldHave(exactText(sunrise));
+    
+        String actualSunrise = $(sunriseValue).getText();
+    
+        assertFalse(actualSunrise.isEmpty(), "Время восхода не отображается");
+        assertTrue(actualSunrise.matches("([0-1]?[0-9]|2[0-3]):[0-5][0-9]"), 
+            "Неверный формат времени восхода: " + actualSunrise);
     }
 
-    public void checkSunset(String sunset) {
+    public void checkSunset() {
         $(sunsetValue).scrollTo().isDisplayed();
-        $(sunsetValue).shouldHave(exactText(sunset));
+    
+        String actualSunset = $(sunsetValue).getText();
+    
+        assertFalse(actualSunset.isEmpty(), "Время заката не отображается");
+        assertTrue(actualSunset.matches("([0-1]?[0-9]|2[0-3]):[0-5][0-9]"), 
+            "Неверный формат времени заката: " + actualSunset);
     }
 }

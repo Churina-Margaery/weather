@@ -1,24 +1,103 @@
-# docker compose -f docker-compose.ui-test.yml up --build --abort-on-container-exit
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - weather-network-ui-test
+
   frontend:
     build:
       context: ./frontend
       args:
-        VITE_WEATHER_SERVER: http://ui_test:5000
+        VITE_WEATHER_SERVER: http://nginx:80/api
+    depends_on:
+      - backend
     networks:
       - weather-network-ui-test
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - OW_API_KEY=${OW_API_KEY}
+      - VC_API_KEY=${VC_API_KEY}
+      - DB_USER=weather_user
+      - DB_PASSWORD=weather_password
+      - DB_NAME=weather_db
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DISABLE_VISUAL_CROSSING=true
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - weather-network-ui-test
+
+  db:
+    image: postgres:17-alpine
+    container_name: weather_db_test
+    restart: always
+    environment:
+      - POSTGRES_USER=weather_user
+      - POSTGRES_PASSWORD=weather_password
+      - POSTGRES_DB=weather_db
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - weather-network-ui-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weather_user -d weather_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      bash -c "
+        docker-entrypoint.sh postgres &
+        sleep 10 &&
+        psql -U weather_user -d weather_db <<-'EOF'
+          CREATE TABLE IF NOT EXISTS weather_records (
+            id SERIAL PRIMARY KEY,
+            date DATE NOT NULL UNIQUE,
+            temperature FLOAT,
+            wind_speed FLOAT,
+            visibility FLOAT,
+            pressure INTEGER,
+            humidity INTEGER,
+            city VARCHAR(50)
+          );
+          CREATE INDEX IF NOT EXISTS idx_weather_records_date ON weather_records(date);
+          CREATE INDEX IF NOT EXISTS idx_weather_records_city ON weather_records(city);
+        EOF
+        wait
+      "
 
   ui_test:
     build:
       context: ./ui_test
+      dockerfile: Dockerfile
     environment:
-      - FRONTEND_URL=http://frontend:80
+      - FRONTEND_URL=http://nginx:80
+      - CI=true
+      - GITHUB_ACTIONS=true
     depends_on:
-      - frontend
+      - nginx
+      - backend
     networks:
       - weather-network-ui-test
-
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
 
 networks:
   weather-network-ui-test:
     driver: bridge
+
+volumes:
+  postgres_test_data:

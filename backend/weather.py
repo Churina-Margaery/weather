@@ -128,6 +128,11 @@ def forecast_weather(city_name, region, country_name):
         return None, status_code
 
 def get_past_weather_data(lat, lon, days, API_key):
+    # Добавлена проверка для CI
+    if os.getenv('DISABLE_VISUAL_CROSSING') == 'true':
+        print("Visual Crossing disabled in CI, returning empty list")
+        return []
+    
     try:
         end_date = date.today()
         start_date = end_date - timedelta(days=days-1)
@@ -157,6 +162,11 @@ def get_past_weather_data(lat, lon, days, API_key):
 
 def fetch_and_store_spb_weather():
     """Попытка обновить данные СПб в БД с обработкой ошибок"""
+    # Добавлена проверка для CI
+    if os.getenv('DISABLE_VISUAL_CROSSING') == 'true':
+        print("Visual Crossing disabled in CI, skipping update")
+        return False
+    
     from database import engine, Session
     
     if engine is None:

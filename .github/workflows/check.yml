@@ -1,4 +1,4 @@
-name: UI Tests with Selenide and Allure Report
+name: UI Tests with Real Backend and Allure Report
 
 on:
   push:
@@ -9,9 +9,6 @@ permissions:
   contents: write
   pages: write
   id-token: write
-
-env:
-  VITE_WEATHER_SERVER: http://127.0.0.1:5000 
 
 jobs:
   unit-test:
@@ -29,51 +26,183 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    name: UI-tests and Report
+    name: UI-tests with real backend and Report
     needs: unit-test
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Start Frontend
-        working-directory: ./frontend
-        env:
-          VITE_WEATHER_SERVER: ${{ env.VITE_WEATHER_SERVER }}
+      - name: Create .env file
         run: |
-          npm install
-          npm run build
-          npm start > frontend.log 2>&1 & 
+          cat > .env << EOF
+          OW_API_KEY=${{ secrets.OW_API_KEY }}
+          VC_API_KEY=${{ secrets.VC_API_KEY }}
+          DB_USER=test_user
+          DB_PASSWORD=test_password
+          DB_NAME=test_db
+          EOF
+          
+          echo "========== .env contents (keys hidden) =========="
+          cat .env | sed 's/\(API_KEY=\)[^:]*/\1***/'
+
+      - name: Start services with Docker Compose
+        run: |
+          docker compose -f docker-compose.ui-test.yml --env-file .env up -d --build
+          
+          echo "Waiting for services to start..."
+          timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost)" != "200" ]]; do sleep 2; done'
+          echo "Frontend is up!"
           sleep 15
-          curl --retry 5 --retry-delay 3 --retry-all-errors http://localhost:5173 || cat frontend.log
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: 'latest'
-
-      - name: Run Tests
-        working-directory: ./ui_test
-        env:
-          SELENIDE_BROWSER: "chrome"
-          SELENIDE_TIMEOUT: "15000"
+      - name: Debug - check running containers
         run: |
-          mvn clean test \
-            -Dselenide.headless=true \
-            -Dselenide.browser=$SELENIDE_BROWSER \
-            -Dselenide.timeout=$SELENIDE_TIMEOUT \
-            -Dselenide.pageLoadStrategy=normal \
-            -Dchromeoptions.args='--disable-dev-shm-usage,--no-sandbox,--disable-gpu,--window-size=1366,768' \
-            -Dwebdriver.chrome.whitelistedIps="" \
-            -Dallure.results.directory=target/allure-results
+          echo "========== RUNNING CONTAINERS =========="
+          docker compose -f docker-compose.ui-test.yml ps
+
+      - name: Debug backend environment
+        run: |
+          echo "========== BACKEND ENVIRONMENT VARIABLES =========="
+          docker compose -f docker-compose.ui-test.yml exec backend env | sort | grep -E "OW_API_KEY|VC_API_KEY|DB_" || echo "Failed to get backend env"
+
+      - name: Verify database tables
+        run: |
+          echo "========== VERIFYING DATABASE TABLES =========="
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "Failed to list tables"
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\d weather_records" || echo "Table weather_records does not exist"
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "Cannot query weather_records"
+
+      - name: Health check - Database and API endpoints
+        run: |
+          echo "========== HEALTH CHECK =========="
+          echo "=== Database tables ==="
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "\dt" || echo "❌ Failed to list tables"
+          echo -e "\n=== Weather records count ==="
+          docker compose -f docker-compose.ui-test.yml exec db psql -U weather_user -d weather_db -c "SELECT COUNT(*) FROM weather_records;" || echo "❌ Table weather_records does not exist"
+          echo -e "\n=== API Endpoints Status ==="
+          echo -n "Current weather: "
+          curl -s -o /dev/null -w "%{http_code}" http://localhost/api/?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          echo -n "3 days forecast: "
+          curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/3days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          echo -n "10 days forecast: "
+          curl -L -s -o /dev/null -w "%{http_code}" http://localhost/api/10days?city_name=Saint-Petersburg && echo " ✅" || echo " ❌"
+          echo -e "\n=== Recent backend errors ==="
+          docker compose -f docker-compose.ui-test.yml logs backend --tail 50 | grep -i "error\|exception\|fail" || echo "No recent errors found"
+          echo -e "\n========== HEALTH CHECK COMPLETE =========="
+
+      - name: Debug 3/10 days endpoints
+        run: |
+          echo "========== DEBUG 3/10 DAYS ENDPOINTS =========="
+          echo "=== Backend health check (current weather) ==="
+          curl -I http://localhost/api/?city_name=Saint-Petersburg
+          echo -e "\n=== 3 days forecast - RAW RESPONSE (with headers) ==="
+          curl -v http://localhost/api/3days?city_name=Saint-Petersburg 2>&1
+          echo -e "\n=== 10 days forecast - RAW RESPONSE (with headers) ==="
+          curl -v http://localhost/api/10days?city_name=Saint-Petersburg 2>&1
+
+      - name: Debug 3/10 days with redirects
+        run: |
+          echo "========== DEBUG 3/10 DAYS WITH REDIRECTS =========="
+          echo "=== 3 days forecast (with redirect) ==="
+          curl -L http://localhost/api/3days?city_name=Saint-Petersburg | jq . || echo "Failed to get 3 days forecast with redirect"
+          echo -e "\n=== 10 days forecast (with redirect) ==="
+          curl -L http://localhost/api/10days?city_name=Saint-Petersburg | jq . || echo "Failed to get 10 days forecast with redirect"
+
+      - name: Debug backend logs before tests
+        run: |
+          echo "========== BACKEND LOGS BEFORE TESTS =========="
+          docker compose -f docker-compose.ui-test.yml logs backend --tail 100
+
+      - name: 🔧 REBUILD FRONTEND - FIX FOR EMPTY PAGE
+        run: |
+          echo "========== REBUILDING FRONTEND WITH NO CACHE =========="
+          # Очистить кэш и пересобрать фронтенд
+          docker compose -f docker-compose.ui-test.yml build --no-cache frontend
+          
+          # Перезапустить контейнер
+          docker compose -f docker-compose.ui-test.yml up -d frontend
+          
+          # Проверить, что файлы на месте
+          echo "========== CHECKING FRONTEND FILES =========="
+          docker compose -f docker-compose.ui-test.yml exec frontend ls -la /usr/share/nginx/html
+          
+          # Подождать немного для полной инициализации
+          sleep 5
+          
+          # Проверить, что страница теперь нормальная
+          echo "========== CHECKING PAGE AFTER REBUILD =========="
+          curl -s http://localhost | head -20
+
+      - name: Debug page HTML after rebuild
+        run: |
+          echo "========== PAGE HTML DEBUG AFTER REBUILD =========="
+          mkdir -p ./test-reports
+          curl -s http://localhost > page.html
+          echo "=== Looking for key elements in HTML ==="
+          grep -A 2 -B 2 "header__city-search" page.html || echo "❌ Search input not found in HTML"
+          grep -A 2 -B 2 "header__btn" page.html || echo "❌ Theme button not found in HTML"
+          grep -A 2 -B 2 "overview__item-value" page.html || echo "❌ Temperature element not found in HTML"
+          grep -A 2 -B 2 "forecast-container" page.html || echo "❌ Forecast container not found in HTML"
+          cp page.html ./test-reports/ || echo "Failed to copy page.html"
+
+      - name: Build test image with fixed Chrome version
+        run: |
+          echo "========== BUILDING TEST IMAGE =========="
+          docker build \
+            --build-arg CHROME_VERSION=119.0.6545.0-1 \
+            -t ui_test:fixed \
+            ./ui_test
+
+      - name: Run tests with fixed Chrome
+        run: |
+          echo "========== RUNNING TESTS =========="
+          
+          docker compose -f docker-compose.ui-test.yml run \
+            -e SELENIDE_TIMEOUT=90000 \
+            -e SELENIDE_POLLING_INTERVAL=1000 \
+            --name test-runner \
+            ui_test
+          
+          exit_code=$?
+          echo "Test exit code: $exit_code"
+          
+          echo "========== COLLECTING RESULTS =========="
+          mkdir -p ./allure-results ./test-reports
+          docker cp test-runner:/app/target/allure-results/. ./allure-results/ || true
+          docker cp test-runner:/app/build/reports/tests/. ./test-reports/ || true
+          
+          docker rm test-runner
+          exit $exit_code
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: ./test-reports/
+          retention-days: 7
+
+      - name: Upload page HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-html
+          path: page.html
+          retention-days: 7
+
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "========== COLLECTING ALL LOGS =========="
+          docker compose -f docker-compose.ui-test.yml logs > docker-logs.txt
+          docker compose -f docker-compose.ui-test.yml exec nginx cat /var/log/nginx/error.log || true
+          
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: docker-logs
+          path: docker-logs.txt
 
       - name: Copy History
         uses: actions/checkout@v4
@@ -86,8 +215,7 @@ jobs:
         uses: simple-elf/allure-report-action@master
         if: always()
         with:
-          allure_results: ui_test/target/allure-results
-          allure_report: ui_test/target/allure-report
+          allure_results: allure-results
           allure_history: allure-history
           gh_pages: gh-pages
           keep_reports: 20
@@ -100,7 +228,9 @@ jobs:
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
 
-      - name: Stop Frontend
+      - name: Cleanup
+        if: always()
         run: |
-          pkill -f "npm start" || true
-          pkill -f "chrome" || true
+          echo "========== CLEANING UP =========="
+          docker compose -f docker-compose.ui-test.yml down -v
+          docker rmi ui_test:fixed || true
