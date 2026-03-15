@@ -6,3 +6,7 @@ timezonefinder
 flask-cors
 psycopg2-binary
 SQLAlchemy
+pytest
+pytest-mock
+coverage
+pytest-html
