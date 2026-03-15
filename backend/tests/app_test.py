@@ -26,15 +26,40 @@ def test_root_current_weather_ok(app_client, mocker):
     )
     resp = app_client.get("/?city_name=London&country_name=GB")
     assert resp.status_code == 200
-    assert resp.get_json()["temperature"] == 10
+    data = resp.get_json()
+    assert data["temperature"] == 10
+    assert data["description"] == "ok"
 
 
 @pytest.mark.parametrize("status_code", [400, 401, 404, 408, 429, 500])
-def test_root_current_weather_fail_statuses(app_client, mocker, status_code):
+def test_root_current_weather_fail_statuses_return_empty_payload(
+    app_client, mocker, status_code
+):
     mocker.patch("app.current_weather", return_value=(None, status_code))
     resp = app_client.get("/?city_name=London&country_name=GB")
-    assert resp.status_code == status_code
-    assert resp.get_json()["detail"] == "Failed to get weather data"
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["temperature"] == 0
+    assert data["wind_speed"] == 0
+    assert data["visibility"] == 0
+    assert data["pressure"] == 0
+    assert data["humidity"] == 0
+    assert data["description"] == "No data available"
+    assert data["icon"] == ""
+    assert "sunrise" in data
+    assert "sunset" in data
+
+
+def test_root_current_weather_exception_returns_empty_payload(app_client, mocker):
+    mocker.patch("app.current_weather", side_effect=Exception("boom"))
+    resp = app_client.get("/?city_name=London&country_name=GB")
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["temperature"] == 0
+    assert data["description"] == "No data available"
+    assert data["icon"] == ""
 
 
 def test_root_passes_query_params_to_service(app_client, mocker):
@@ -53,16 +78,20 @@ def test_root_passes_query_params_to_service(app_client, mocker):
         "/?city_name=London&country_name=",
     ],
 )
-def test_root_missing_or_empty_params_propagates_failure(app_client, mocker, query):
+def test_root_missing_or_empty_params_return_empty_payload(app_client, mocker, query):
     mocker.patch("app.current_weather", return_value=(None, 400))
     resp = app_client.get(query)
-    assert resp.status_code == 400
-    assert resp.get_json()["detail"] == "Failed to get weather data"
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["temperature"] == 0
+    assert data["description"] == "No data available"
 
 
 def test_forecast_ok(app_client, mocker):
     mocker.patch(
-        "app.forecast_weather", return_value=([{"date": "x", "temperature": 1}], 200)
+        "app.forecast_weather",
+        return_value=([{"date": "x", "temperature": 1}], 200),
     )
     resp = app_client.get("/forecast/?city_name=London&country_name=GB")
     assert resp.status_code == 200
@@ -71,11 +100,27 @@ def test_forecast_ok(app_client, mocker):
 
 
 @pytest.mark.parametrize("status_code", [400, 404, 500])
-def test_forecast_fail_statuses(app_client, mocker, status_code):
+def test_forecast_fail_statuses_return_empty_forecast(app_client, mocker, status_code):
     mocker.patch("app.forecast_weather", return_value=(None, status_code))
     resp = app_client.get("/forecast/?city_name=London&country_name=GB")
-    assert resp.status_code == status_code
-    assert resp.get_json()["detail"] == "Failed to get weather data"
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 5
+    assert all(item["temperature"] == 0 for item in data)
+    assert all("date" in item for item in data)
+
+
+def test_forecast_exception_returns_empty_forecast(app_client, mocker):
+    mocker.patch("app.forecast_weather", side_effect=Exception("boom"))
+    resp = app_client.get("/forecast/?city_name=London&country_name=GB")
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 5
+    assert all(item["temperature"] == 0 for item in data)
 
 
 def test_forecast_passes_query_params_to_service(app_client, mocker):
@@ -92,9 +137,7 @@ def test_3days_spb_db_path_returns_db_data(app_client, mocker, city_name):
         autospec=True,
         return_value=[{"date": "2020-01-01", "temperature": 1}],
     )
-    mocked_api = mocker.patch(
-        "app.past_weather"
-    )
+    mocked_api = mocker.patch("app.past_weather")
 
     resp = app_client.get(f"/3days/?city_name={city_name}&country_name=RU")
     assert resp.status_code == 200
@@ -117,13 +160,23 @@ def test_3days_spb_fallback_to_api_when_db_none(app_client, mocker, city_name):
 
 
 @pytest.mark.parametrize("status_code", [400, 500])
-def test_3days_spb_fallback_api_failure_propagates(app_client, mocker, status_code):
+def test_3days_spb_fallback_api_failure_returns_empty_data(
+    app_client, mocker, status_code
+):
     mocker.patch("app.get_spb_weather_from_db", return_value=None)
     mocker.patch("app.past_weather", return_value=(None, status_code))
 
     resp = app_client.get("/3days/?city_name=спб&country_name=RU")
-    assert resp.status_code == status_code
-    assert resp.get_json()["detail"] == "Failed to get weather data"
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 3
+    assert all(item["temperature"] == 0 for item in data)
+    assert all(item["wind_speed"] == 0 for item in data)
+    assert all(item["visibility"] == 0 for item in data)
+    assert all(item["pressure"] == 0 for item in data)
+    assert all(item["humidity"] == 0 for item in data)
+    assert all("date" in item for item in data)
 
 
 @pytest.mark.parametrize("city_name", NON_SPB_ALIASES)
@@ -165,15 +218,23 @@ def test_3days_city_name_with_whitespace_not_recognized_as_spb(app_client, mocke
 
 
 @pytest.mark.parametrize(
-    "query",
+    "query,days",
     [
-        "/3days/?country_name=RU",
-        "/10days/?country_name=RU",
+        ("/3days/?country_name=RU", 3),
+        ("/10days/?country_name=RU", 10),
     ],
 )
-def test_missing_city_name_raises_attribute_error_in_testing_mode(app_client, query):
-    with pytest.raises(AttributeError):
-        app_client.get(query)
+def test_missing_city_name_returns_empty_data_not_exception(
+    app_client, mocker, query, days
+):
+    mocker.patch("app.past_weather", return_value=(None, 400))
+    resp = app_client.get(query)
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert isinstance(data, list)
+    assert len(data) == days
+    assert all(item["temperature"] == 0 for item in data)
 
 
 @pytest.mark.parametrize("city_name", SPB_ALIASES)
@@ -221,11 +282,15 @@ def test_10days_non_spb_goes_directly_to_api(app_client, mocker, city_name):
 
 
 @pytest.mark.parametrize("status_code", [400, 500])
-def test_10days_api_failure_propagates(app_client, mocker, status_code):
+def test_10days_api_failure_returns_empty_data(app_client, mocker, status_code):
     mocker.patch("app.past_weather", return_value=(None, status_code))
     resp = app_client.get("/10days/?city_name=London&country_name=GB")
-    assert resp.status_code == status_code
-    assert resp.get_json()["detail"] == "Failed to get weather data"
+
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert isinstance(data, list)
+    assert len(data) == 10
+    assert all(item["temperature"] == 0 for item in data)
 
 
 @pytest.mark.parametrize(

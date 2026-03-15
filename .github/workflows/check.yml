@@ -1,7 +1,8 @@
-name: UI Tests with Real Backend and Allure Report
+name: Tests
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -13,7 +14,7 @@ permissions:
 jobs:
   backend-unit-test:
     runs-on: ubuntu-latest
-    name: Unit-tests
+    name: Backend Unit Tests
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
