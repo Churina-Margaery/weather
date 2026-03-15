@@ -10,7 +10,7 @@ describe('createAPI', () => {
   it('should create axios instance with timeout and baseURL and register response interceptor', async () => {
     const useMock = vi.fn();
 
-    vi.stubEnv('BACKEND_URL', 'http://localhost:5000');
+    vi.stubEnv('VITE_WEATHER_SERVER', 'http://localhost:5000');
 
     const apiMock = {
       interceptors: {
