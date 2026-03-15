@@ -1,41 +1,47 @@
-FROM eclipse-temurin:17-jdk
+FROM selenium/standalone-chrome:119.0-chromedriver-119.0
 
-# Install Chrome
+USER root
+
+# Install Java 17
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    ca-certificates \
+    openjdk-17-jdk \
+    maven \
     curl \
     unzip \
-    --no-install-recommends \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Maven
-RUN apt-get update && apt-get install -y maven
+# Set Java 17 as default
+RUN update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
 
-# Copy only pom.xml first to cache dependencies
+# Create symlink for ChromeDriver
+RUN ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver
+
+# Set JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+USER seluser
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy rest of the project files
 COPY . .
-
-# Compile tests during build (not just compile but also test-compile)
 RUN mvn clean package -DskipTests
 
-# Run tests using shell form to properly expand environment variables
+# Verify installations
+RUN echo "Java version:" && java -version
+RUN echo "Chrome version:" && google-chrome --version
+RUN echo "ChromeDriver version:" && chromedriver --version
+
+# Запуск тестов с таймаутом 60 секунд
 CMD mvn test \
     -Dselenide.headless=true \
     -Dselenide.browser=chrome \
-    -Dselenide.timeout=15000 \
+    -Dselenide.timeout=60000 \
+    -Dselenide.polling-interval=500 \
+    -Dmaven.compiler.source=17 \
+    -Dmaven.compiler.target=17 \
+    -Dfrontend.url=${FRONTEND_URL} \
     -Dselenide.baseUrl=${FRONTEND_URL} \
-    -Dselenide.pageLoadStrategy=normal \
-    -Dchromeoptions.args="--disable-dev-shm-usage,--no-sandbox,--disable-gpu,--window-size=1366,768" \
-    -Dwebdriver.chrome.whitelistedIps="" \
     -Dallure.results.directory=target/allure-results

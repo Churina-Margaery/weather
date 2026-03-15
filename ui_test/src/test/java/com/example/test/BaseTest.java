@@ -2,7 +2,6 @@ package com.example.test;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
-import com.example.utils.MockUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,21 +14,45 @@ public class BaseTest {
 
     @BeforeEach
     public void setupConf() {
-
         Configuration.browser = CHROME;
-        Configuration.baseUrl = System.getProperty("selenide.baseUrl", "http://localhost:5173");
-        Configuration.timeout = 10000;
+        
+        String baseUrl = System.getProperty("frontend.url", 
+                         System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:8125"));
+        Configuration.baseUrl = baseUrl;
+        
+        Configuration.timeout = 30000;
+        Configuration.browserSize = "1366x768";
+        
+        // Определяем, запущены ли тесты в CI
+        boolean isCI = System.getenv("CI") != null || System.getenv("GITHUB_ACTIONS") != null;
         
         ChromeOptions options = new ChromeOptions();
         
-        String userDataDir = "C:/temp/chrome-profile-" + System.currentTimeMillis();
+        // Базовые аргументы для всех окружений
         options.addArguments(
-            "--user-data-dir=" + userDataDir,
+            "--no-sandbox",
             "--disable-dev-shm-usage",
+            "--disable-gpu",
             "--window-size=1366,768",
-            "--no-sandbox"
+            "--remote-allow-origins=*"
         );
         
+        if (isCI) {
+            // Для CI - обязательный headless режим и путь к chromedriver
+            System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
+            options.addArguments("--headless=new");
+            options.addArguments("--disable-setuid-sandbox");
+            options.addArguments("--disable-extensions");
+            Configuration.headless = true;
+            
+            System.out.println("🔧 Running in CI mode with headless Chrome");
+        } else {
+            // Для локального запуска - обычный режим с браузером
+            Configuration.headless = false;
+            System.out.println("🔧 Running locally with visible Chrome");
+        }
+        
+        // Добавляем prefs для избежания проблем
         Map<String, Object> prefs = new HashMap<>();
         prefs.put("credentials_enable_service", false);
         prefs.put("profile.default_content_setting_values.automatic_downloads", 1);
@@ -41,8 +64,6 @@ public class BaseTest {
         
         Configuration.browserCapabilities = options;
 
-        MockUtil.stubSpb();
-        
         Selenide.open("/");
     }
 

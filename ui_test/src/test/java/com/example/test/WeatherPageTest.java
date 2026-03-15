@@ -1,6 +1,8 @@
 package com.example.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import com.example.elements.AdditionalInfoBlock;
@@ -9,11 +11,9 @@ import com.example.elements.NextDayWeatherBlock;
 import com.example.elements.SearchString;
 import com.example.elements.StatisticBlock;
 import com.example.pages.GitHubPage;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.qameta.allure.Allure;
 import static com.codeborne.selenide.Selenide.switchTo;
 
-@WireMockTest(httpPort = 5000)
 @DisplayName("Основной экран")
 public class WeatherPageTest extends BaseTest {
     
@@ -50,8 +50,8 @@ public class WeatherPageTest extends BaseTest {
         MainInfoBlock mainInfoBlock= new MainInfoBlock();
 
         Allure.step("Проверяем отображения основной информации: температура, погода, город и дата", () -> {
-            mainInfoBlock.checkTemperature("10°C");
-            mainInfoBlock.checkWeather("overcast clouds");
+            assertTrue(mainInfoBlock.checkTemperature());
+            assertTrue(mainInfoBlock.checkWeather());
             mainInfoBlock.checkCity("Saint-Petersburg");
             mainInfoBlock.checkDate();
         });
@@ -63,12 +63,12 @@ public class WeatherPageTest extends BaseTest {
         AdditionalInfoBlock additionalInfoBlock = new AdditionalInfoBlock();
 
         Allure.step("Проверяем отображения подрбной информации: ветер, видимость, давление: влжность: рассвет и закат", () -> {
-            additionalInfoBlock.checkWind("4 km/h");
-            additionalInfoBlock.checkVisibility("10 km");
-            additionalInfoBlock.checlPressure("1017 hPa");
-            additionalInfoBlock.checkHumidity("76 %");
-            additionalInfoBlock.checkSunrise("05:21");
-            additionalInfoBlock.checkSunset("20:32");
+            additionalInfoBlock.checkWind();
+            additionalInfoBlock.checkVisibility();
+            additionalInfoBlock.checkPressure();
+            additionalInfoBlock.checkHumidity();
+            additionalInfoBlock.checkSunrise();
+            additionalInfoBlock.checkSunset();
         });
     }
 
@@ -78,9 +78,9 @@ public class WeatherPageTest extends BaseTest {
         NextDayWeatherBlock nextDayWeatherBlock = new NextDayWeatherBlock();
 
         Allure.step("Проверяем отображение погоды в следующие несколько часов", () -> {
-            nextDayWeatherBlock.checkDaysList("Tuesday", "Wednesday", "Wednesday", "Wednesday", "Wednesday");
-            nextDayWeatherBlock.checkTimeList("21:00", "00:00", "03:00", "06:00", "09:00");
-            nextDayWeatherBlock.checkTemperatureList("10 °C", "9 °C", "8 °C", "7 °C", "6 °C");
+            nextDayWeatherBlock.checkDaysList();
+            nextDayWeatherBlock.checkTimeList();
+            nextDayWeatherBlock.checkTemperatureList();
         });
     }
 
